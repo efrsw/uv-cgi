@@ -1,0 +1,9 @@
+#text {
+    font-style: italic;
+}
+
+#game-canvas {
+    background-color: rgb(162, 146, 163);
+    width: 800px;
+    height: 600px;
+}
