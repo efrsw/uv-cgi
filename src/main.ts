@@ -1,37 +1,105 @@
 import { mat4 } from "gl-matrix";
 import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helpers";
+import { Shape } from "./models/shape";
 
-let canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
-let gl = canvas.getContext('webgl') as WebGLRenderingContext;
+function assignCallbacks(matrix: mat4) {
+    globalThis.onkeydown = e => {
+        switch (e.key) {
+            case "ArrowDown":
+                mat4.translate(matrix, matrix, [0, -0.2, 0]);
+                console.log('ArrowDown');
+                break;
+            case "ArrowUp":
+                mat4.translate(matrix, matrix, [0, 0.2, 0]);
+                console.log('ArrowUp');
+                break;
+            case "ArrowLeft":
+                mat4.translate(matrix, matrix, [-0.2, 0, 0]);
+                console.log('ArrowLeft');
+                break;
+            case "ArrowRight":
+                mat4.translate(matrix, matrix, [0.2, 0, 0]);
+                console.log('ArrowRight');
+                break;
+        }
+    };
+}
 
-let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-    fetch("/src/vertex-shader-2d.glsl").then(x => x.text()),
-    fetch("/src/fragment-shader-2d.glsl").then(x => x.text())]);
+async function main() {
 
-let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-let positions = [
-    0, 0.5, 0,
-    -0.5, -0.5, 0,
-    0.5, -0.5, 0
-];
+    let canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
+    let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
-if (vertexShader !== undefined && fragmentShader !== undefined) {
+    let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
+        fetch("/src/vertex-shader-2d.glsl").then(x => x.text()),
+        fetch("/src/fragment-shader-2d.glsl").then(x => x.text())]);
+
+    let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+    let pyramid = new Shape(
+        [
+            -0.5, -0.5, 0,   // Vertex 1
+            0.5, -0.5, 0,   // Vertex 2
+            0.5, 0.5, 0,   // Vertex 3
+            -0.5, 0.5, 0,   // Vertex 4
+            0, 0, 1    // Apex
+        ],
+        [
+            // Base face
+            0, 1, 2,
+            0, 2, 3,
+
+            // Side faces
+            0, 1, 4,  // Side 1
+            1, 2, 4,  // Side 2
+            2, 3, 4,  // Side 3
+            3, 0, 4   // Side 4
+        ]
+    );
+
+    if (vertexShader === undefined || fragmentShader === undefined) {
+        console.log("Problem with shaders");
+        return;
+    }
+
     let program = createProgram(gl, vertexShader, fragmentShader);
 
-    if (program !== undefined) {
+    if (program == undefined) {
+        console.log("Problem with program");
+        return;
+    }
 
-        // Initialization
-        let projectionULoc = gl.getUniformLocation(program, "u_projection");
-        let viewULoc = gl.getUniformLocation(program, "u_view");
-        let worldULoc = gl.getUniformLocation(program, "u_world");
+    // Initialization
+    let modelULocation = gl.getUniformLocation(program, "u_model");
+    let viewULocation = gl.getUniformLocation(program, "u_view");
+    let worldULoc = gl.getUniformLocation(program, "u_world");
 
-        let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-        let positionBuffer = gl.createBuffer(); // Could be null if new buffers cannot be created
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer); // Stores information about verticies
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, pyramid.vertexBuffer, gl.STATIC_DRAW);
 
-        // Rendering
+    let positionIdxBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, positionIdxBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, pyramid.indexBuffer, gl.STATIC_DRAW);
+
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+
+    // Setup matrixes
+    let projectionMatrix = mat4.create();
+    mat4.identity(projectionMatrix);
+
+    let viewMatrix = mat4.create();
+    mat4.identity(viewMatrix);
+
+    let modelMatrix = mat4.create();
+    mat4.identity(modelMatrix);
+
+    // Set up callbacks
+    assignCallbacks(viewMatrix);
+
+    // Rendering
+    const draw = () => {
         resizeCanvasToDisplaySize(canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -40,35 +108,26 @@ if (vertexShader !== undefined && fragmentShader !== undefined) {
 
         gl.useProgram(program);
 
-        let projectionM = mat4.create();
-        mat4.identity(projectionM);
-        gl.uniformMatrix4fv(projectionULoc, false, projectionM);
-
-        let viewM = mat4.create();
-        mat4.identity(viewM);
-        gl.uniformMatrix4fv(viewULoc, false, viewM);
-
-        let worldM = mat4.create();
-        mat4.identity(worldM);
-        gl.uniformMatrix4fv(worldULoc, false, worldM);
-
-        gl.enableVertexAttribArray(positionAttributeLocation);
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.uniformMatrix4fv(modelULocation, false, projectionMatrix);
+        gl.uniformMatrix4fv(viewULocation, false, viewMatrix);
+        gl.uniformMatrix4fv(worldULoc, false, modelMatrix);
 
         gl.vertexAttribPointer(positionAttributeLocation,
             3,
             gl.FLOAT,
             false,
-            3 * Float32Array.BYTES_PER_ELEMENT,
+            0,
             0);
+        gl.enableVertexAttribArray(positionAttributeLocation);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, positionIdxBuffer);
 
-    } else {
-        console.log(`Program was not created successfully. Program: ${program}`);
+        gl.drawElements(gl.TRIANGLES, pyramid.indexBuffer.length, gl.UNSIGNED_SHORT, 0);
+
+        window.requestAnimationFrame(draw);
     }
 
-} else {
-    console.log(`Either vertex or fragment shader is undefined. Vertex ${vertexShader}; Fragment ${fragmentShader}`);
+    window.requestAnimationFrame(draw);
 }
 
+await main();
