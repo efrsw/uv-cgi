@@ -1,8 +1,9 @@
 import { mat4 } from "gl-matrix";
 import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helpers";
 import { Shape } from "./models/shape";
+import { Position } from "./models/position";
 
-function assignCallbacks(matrix: mat4) {
+function handleArrowKeys(matrix: mat4) {
     globalThis.onkeydown = e => {
         switch (e.key) {
             case "ArrowDown":
@@ -23,6 +24,40 @@ function assignCallbacks(matrix: mat4) {
                 break;
         }
     };
+}
+
+function handleMouseInput(canvas: HTMLCanvasElement, matrix: mat4) {
+    let isMoving = false;
+    let previousPosition = new Position();
+
+    canvas.addEventListener('mousedown', e => {
+        isMoving = true;
+        previousPosition = new Position(e.x, e.y);
+    });
+
+    canvas.addEventListener('mousemove', e => {
+        if (isMoving) {
+
+            // TODO: The speed of the pointer and the translation is somewhat off
+            let translationVector = new Position(
+                (e.x - previousPosition.x) / 50, // Inverse translation of x
+                -(e.y - previousPosition.y) / 50 // Inverse translation of y
+            );
+
+            console.log(translationVector);
+
+            mat4.translate(matrix, matrix, [
+                translationVector.x,
+                translationVector.y,
+                0
+            ]);
+            previousPosition = new Position(e.x, e.y);
+        }
+    });
+
+    canvas.addEventListener('mouseup', _ => {
+        isMoving = false;
+    });
 }
 
 async function main() {
@@ -73,7 +108,7 @@ async function main() {
     // Initialization
     let modelULocation = gl.getUniformLocation(program, "u_model");
     let viewULocation = gl.getUniformLocation(program, "u_view");
-    let worldULoc = gl.getUniformLocation(program, "u_world");
+    let projectionULocation = gl.getUniformLocation(program, "u_projection");
 
     let positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -96,7 +131,8 @@ async function main() {
     mat4.identity(modelMatrix);
 
     // Set up callbacks
-    assignCallbacks(viewMatrix);
+    handleArrowKeys(viewMatrix);
+    handleMouseInput(canvas, viewMatrix);
 
     // Rendering
     const draw = () => {
@@ -110,7 +146,7 @@ async function main() {
 
         gl.uniformMatrix4fv(modelULocation, false, projectionMatrix);
         gl.uniformMatrix4fv(viewULocation, false, viewMatrix);
-        gl.uniformMatrix4fv(worldULoc, false, modelMatrix);
+        gl.uniformMatrix4fv(projectionULocation, false, modelMatrix);
 
         gl.vertexAttribPointer(positionAttributeLocation,
             3,
