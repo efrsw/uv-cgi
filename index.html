@@ -1,15 +1,20 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css">
     <title>Triangle</title>
-  </head>
-  <body>
-    <canvas id="game-canvas"></canvas>
-    <p id="text">My first triangle</p>
+</head>
+
+<body>
+    <div id="container">
+        <canvas id="game-canvas"></canvas>
+        <p id="text">My first triangle</p>
+    </div>
     <script type="module" src="/src/main.ts"></script>
     <script id="vertex-shader-2d" type="notjs" src="/src/vertex-shader-2d.glsl"></script>
     <script id="fragment-shader-2d" type="notjs" src="/src/fragment-shader-2d.glsl"></script>
-  </body>
+</body>
+
 </html>

@@ -1,5 +1,14 @@
+body {
+    overflow: hidden;
+}
+
 #text {
     font-style: italic;
+}
+
+#container {
+    display: flex;
+    justify-content: center;
 }
 
 #game-canvas {
