@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { glMatrix, mat4 } from "gl-matrix";
 import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helpers";
 import { Shape } from "./models/shape";
 import { Position } from "./models/position";
@@ -25,16 +25,40 @@ function handleKeyboardKeys(state: State) {
                 state.selectedShapeIdx = undefined;
                 break;
             case "ArrowDown":
-                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
+                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
                 break;
             case "ArrowUp":
-                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0, 0.2, 0]));
+                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0.2, 0]));
                 break;
             case "ArrowLeft":
-                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [-0.2, 0, 0]));
+                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [-0.2, 0, 0]));
                 break;
             case "ArrowRight":
-                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0.2, 0, 0]));
+                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0.2, 0, 0]));
+                break;
+            case ",":
+                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, 0.2]));
+                break;
+            case ".":
+                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.2]));
+                break;
+            case "i":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(10)));
+                break;
+            case "k":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(-10)));
+                break;
+            case "o":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(10)));
+                break;
+            case "u":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(-10)));
+                break;
+            case "l":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(10)));
+                break;
+            case "j":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(-10)));
                 break;
         }
     };
@@ -58,7 +82,7 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: State) {
             -(e.y - previousPosition.y) / 50 // Inverse translation of y
         );
 
-        state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [
+        state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [
                 translationVector.x,
                 translationVector.y,
                 0
@@ -72,7 +96,7 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: State) {
     });
 
     canvas.onwheel = (e) => {
-        state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0, 0, -0.5 * Math.sign(e.deltaY)]));
+        state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.5 * Math.sign(e.deltaY)]));
     };
 }
 
@@ -82,15 +106,15 @@ async function main() {
     let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
     let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-        fetch("/src/vertex-shader-2d.glsl").then(x => x.text()),
-        fetch("/src/fragment-shader-2d.glsl").then(x => x.text())]);
+        fetch("/src/shaders/vertex.glsl").then(x => x.text()),
+        fetch("/src/shaders/fragment.glsl").then(x => x.text())]);
 
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
     // Fill the state with pyramids and cubes
     let state = new State(Array.from(Array(9),
-        (_, i) => i % 2 === 0 ? new Shape(gl, 'cube') : new Shape(gl, 'pyramid')));
+        (_, i) => i % 2 === 0 ? new Shape(gl, 'cube') : new Shape(gl, 'tetrahedron')));
 
     // Warning: Branch misprediction incoming
     state.shapes.forEach((s, i) => {
@@ -145,6 +169,7 @@ async function main() {
     let projectionULocation = gl.getUniformLocation(program, "u_projection");
 
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    let colorAttributeLocation = gl.getAttribLocation(program, "a_color");
 
     // Set up callbacks
     handleKeyboardKeys(state);
@@ -155,14 +180,18 @@ async function main() {
         resizeCanvasToDisplaySize(canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-        gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.clearColor(1.1, 1.1, 1.1, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT);
 
         gl.useProgram(program);
 
         gl.uniformMatrix4fv(viewULocation, false, state.camera.viewMatrix);
 
-        state.draw(gl, positionAttributeLocation, projectionULocation, modelULocation);
+        state.draw(gl, positionAttributeLocation, colorAttributeLocation, projectionULocation, modelULocation);
 
         window.requestAnimationFrame(draw);
     }

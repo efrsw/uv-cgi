@@ -25,16 +25,17 @@ export class State {
 
     set selectedShapeIdx(selectedIndex: number[] | undefined) {
         if (selectedIndex !== undefined)
-            this.#selectedShapeIdx = new Set([...selectedIndex.map(i => i - 1)]);
+            this.#selectedShapeIdx = new Set([...selectedIndex.map(i => i - 1)]); // Indecies in the array are one below the user input
         else 
-            this.#selectedShapeIdx = selectedIndex
+            this.#selectedShapeIdx = selectedIndex // Assign undefined, which means that camera is selected
     }
 
-    get selectedShapeMatrix() {
+    get selectedShapeMatricies() {
         if (this.#selectedShapeIdx !== undefined) {
             return this.shapes
                 .filter((_, idx) => this.#selectedShapeIdx!.has(idx))
                 .map(x => x.modelMatrix);
+
         }
 
         return [this.camera.viewMatrix];
@@ -42,13 +43,14 @@ export class State {
 
     draw(gl: WebGLRenderingContext,
         positionAttributeLocation: number,
+        colorAttributeLocation: number,
         projectionULocation: WebGLUniformLocation | null,
         modelULocation: WebGLUniformLocation | null) {
 
         gl.uniformMatrix4fv(projectionULocation, false, this.projectionMatrix);
 
         for (let shape of this.shapes) {
-            shape.draw(gl, positionAttributeLocation, modelULocation);
+            shape.draw(gl, positionAttributeLocation, colorAttributeLocation, modelULocation);
         }
     }
 }
