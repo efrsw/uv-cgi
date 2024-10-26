@@ -49,8 +49,10 @@ export class State {
 
         gl.uniformMatrix4fv(projectionULocation, false, this.projectionMatrix);
 
-        for (let shape of this.shapes) {
+        this.shapes.forEach((shape, idx) => {
             shape.draw(gl, positionAttributeLocation, colorAttributeLocation, modelULocation);
-        }
+            if (this.#selectedShapeIdx?.has(idx)) 
+                shape.drawAxis(gl, positionAttributeLocation, colorAttributeLocation);
+        });
     }
 }

@@ -1,11 +1,10 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 
 export class Shape {
     vertexArray: Float32Array;
     indexArray: Uint16Array;
     colorsArray: Float32Array;
     modelMatrix: mat4;
-    centroid: Coordinates;
     shapeType: ShapeType
 
     #positionBuffer: WebGLBuffer;
@@ -20,7 +19,6 @@ export class Shape {
                 break;
         }
         this.shapeType = shapeType;
-        this.centroid = this.#findCentroid();
 
         this.modelMatrix = mat4.create();
         this.#positionBuffer = this.#bufferPositionData(gl);
@@ -44,33 +42,61 @@ export class Shape {
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexArray.length / 3);
     }
 
+    drawAxis(gl: WebGLRenderingContext,
+        positionAttributeLocation: number,
+        colorAttributeLocation: number) {
+
+        // Draw coordinate axis
+        // Draw local coordinate axes
+        const axisPositions = new Float32Array([
+            0, 0, 0,
+            1, 0, 0, 
+
+            0, 0, 0,
+            0, 1, 0,
+
+            0, 0, 0,
+            0, 0, 1  
+        ]);
+
+        const axisColors = new Float32Array([
+            1, 0, 0,
+            1, 0, 0,
+
+            0, 1, 0,
+            0, 1, 0,
+
+            0, 0, 1,
+            0, 0, 1  
+        ]);
+
+        // Create and bind the buffer for axis positions
+        const axisPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, axisPositionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, axisPositions, gl.STATIC_DRAW);
+
+        // Set attribute pointer for position (axes)
+        gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(positionAttributeLocation);
+
+        // Create and bind the buffer for axis colors
+        const axisColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, axisColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, axisColors, gl.STATIC_DRAW);
+
+        // Set attribute pointer for color (axes)
+        gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(colorAttributeLocation);
+
+        // Draw the axes as lines
+        gl.drawArrays(gl.LINES, 0, 6);
+    }
 
     #bufferPositionData(gl: WebGLRenderingContext): WebGLBuffer {
         let positionBuffer: WebGLBuffer = gl.createBuffer()!;
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexArray, gl.STATIC_DRAW);
         return positionBuffer;
-    }
-
-    #findCentroid(): Coordinates {
-        let sumX = 0, sumY = 0, sumZ = 0;
-        const numVertices = this.vertexArray.length / 3;
-
-        for (let i = 0; i < this.vertexArray.length; i += 3) {
-            sumX += this.vertexArray[i];
-            sumY += this.vertexArray[i + 1];
-            sumZ += this.vertexArray[i + 2];
-        }
-
-        const centerX = sumX / numVertices;
-        const centerY = sumY / numVertices;
-        const centerZ = sumZ / numVertices;
-
-        return {
-            x: centerX,
-            y: centerY,
-            z: centerZ
-        };
     }
 
     #createCube(): [Float32Array, Uint16Array, Float32Array] {
