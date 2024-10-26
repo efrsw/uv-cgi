@@ -26,28 +26,6 @@ export class Shape {
         this.#positionBuffer = this.#bufferPositionData(gl);
     }
 
-    scale(vector: Coordinates) {
-        mat4.scale(this.modelMatrix, this.modelMatrix, [vector.x, vector.y, vector.z]);
-    }
-
-    rotate(vector: Coordinates) {
-        let initialVector = new Float32Array([0, 0, 0]);
-        let currentTranslation = new Float32Array([0, 0, 0]);
-
-        mat4.getTranslation(currentTranslation, this.modelMatrix);
-        vec3.sub(currentTranslation, initialVector, currentTranslation);
-
-        mat4.translate(this.modelMatrix, this.modelMatrix, currentTranslation);
-
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, vector.x);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, vector.y);
-        mat4.rotateZ(this.modelMatrix, this.modelMatrix, vector.z);
-    }
-
-    translate(vector: Coordinates) {
-        mat4.translate(this.modelMatrix, this.modelMatrix, [vector.x, vector.y, vector.z]);
-    }
-
     draw(gl: WebGLRenderingContext,
         positionAttributeLocation: number,
         colorAttributeLocation: number,
@@ -56,15 +34,14 @@ export class Shape {
         // Apply model transformation matrix
         gl.uniformMatrix4fv(modelUniformLocation, false, this.modelMatrix);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.#positionBuffer);
         gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(colorAttributeLocation);
 
         gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(positionAttributeLocation);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.#positionBuffer);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 36);
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertexArray.length / 3);
     }
 
 
@@ -252,45 +229,45 @@ export class Shape {
                 // 3-2
                 // |/|
                 // 0-1
-                -0.5, 0.0, -0.5, // 0
-                -0.5, 0.0, 0.5,  // 3
-                0.5, 0.0, 0.5,   // 2
+                -0.5, -0.5, 0.5,  // 0 0
+                0.5, -0.5, -0.5,  // 2 2
+                -0.5, -0.5, -0.5, // 3 5
 
-                -0.5, 0.0, -0.5, // 0
-                0.5, 0.0, 0.5,   // 2
-                0.5, 0.0, -0.5,  // 1
+                -0.5, -0.5, 0.5,  // 0 0
+                0.5, -0.5, 0.5,   // 1 1
+                0.5, -0.5, -0.5,  // 2 2
 
                 // Left face
                 //   4
                 //  / \
                 // 3---0
-                -0.5, 0.0, 0.5,  // 3
-                0.0, 1.0, 0.0,   // 4 
-                -0.5, 0.0, -0.5, // 0
+                -0.5, -0.5, -0.5, // 3 5
+                0.0, 0.5, 0.0,   // 4 
+                -0.5, -0.5, 0.5,  // 0 0
 
                 // Back face
                 //   4
                 //  / \
                 // 2---3
-                0.5, 0.0, 0.5,   // 2
-                0.0, 1.0, 0.0,   // 4 
-                -0.5, 0.0, 0.5,  // 3
+                0.5, -0.5, -0.5,  // 2 2
+                0.0, 0.5, 0.0,   // 4 
+                -0.5, -0.5, -0.5, // 3 5
 
                 // Right face
                 //   4
                 //  / \
                 // 1---2
-                0.5, 0.0, -0.5,  // 1
-                0.0, 1.0, 0.0,   // 4 
-                0.5, 0.0, 0.5,   // 2
+                0.5, -0.5, 0.5,  // 1
+                0.0, 0.5, 0.0,   // 4 
+                0.5, -0.5, -0.5,  // 2 2
 
                 // Front face
                 //   4
                 //  / \
                 // 0---1
-                -0.5, 0.0, -0.5, // 0
-                0.0, 1.0, 0.0,   // 4 
-                0.5, 0.0, -0.5,  // 1
+                -0.5, -0.5, 0.5,  // 0 0
+                0.0, 0.5, 0.0,   // 4 
+                0.5, -0.5, 0.5,  // 1
 
             ]),
             new Uint16Array([

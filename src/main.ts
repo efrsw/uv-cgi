@@ -60,6 +60,24 @@ function handleKeyboardKeys(state: State) {
             case "j":
                 state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(-10)));
                 break;
+            case "a":
+                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [0.9, 1, 1]));
+                break;
+            case "A":
+                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1.1, 1, 1]));
+                break;
+            case "b":
+                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 0.9, 1]));
+                break;
+            case "B":
+                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1.1, 1]));
+                break;
+            case "c":
+                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 0.9]));
+                break;
+            case "C":
+                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 1.1]));
+                break;
         }
     };
 }
@@ -120,31 +138,31 @@ async function main() {
     state.shapes.forEach((s, i) => {
         switch (i) {
             case 0:
-                s.translate({ x: -3, y: 3, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [-3, 3, 0])
                 break;
             case 1:
-                s.translate({ x: 0, y: 3, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [0, 3, 0])
                 break;
             case 2:
-                s.translate({ x: 3, y: 3, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [3, 3, 0])
                 break;
             case 3:
-                s.translate({ x: -3, y: 0, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [-3, 0, 0])
                 break;
             case 4:
-                s.translate({ x: 0, y: 0, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [0, 0, 0])
                 break;
             case 5:
-                s.translate({ x: 3, y: 0, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [3, 0, 0])
                 break;
             case 6:
-                s.translate({ x: -3, y: -3, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [-3, -3, 0])
                 break;
             case 7:
-                s.translate({ x: 0, y: -3, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [0, -3, 0])
                 break;
             case 8:
-                s.translate({ x: 3, y: -3, z: 0 });
+                mat4.translate(s.modelMatrix, s.modelMatrix, [3, -3, 0])
                 break;
             default:
                 break;
