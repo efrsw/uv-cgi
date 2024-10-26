@@ -7,7 +7,7 @@ export class State {
     camera: Camera
     projectionMatrix: mat4;
 
-    #selectedShapeIdx: number | undefined;
+    #selectedShapeIdx: Set<number> | undefined;
 
     constructor(shapes: Shape[]) {
         this.shapes = shapes;
@@ -23,19 +23,21 @@ export class State {
         );
     }
 
-    set selectedShapeIdx(idx: number | undefined) {
-        if (idx !== undefined)
-            this.#selectedShapeIdx = idx - 1;
+    set selectedShapeIdx(selectedIndex: number[] | undefined) {
+        if (selectedIndex !== undefined)
+            this.#selectedShapeIdx = new Set([...selectedIndex.map(i => i - 1)]);
         else 
-            this.#selectedShapeIdx = idx
+            this.#selectedShapeIdx = selectedIndex
     }
 
     get selectedShapeMatrix() {
         if (this.#selectedShapeIdx !== undefined) {
-            return this.shapes[this.#selectedShapeIdx].modelMatrix;
+            return this.shapes
+                .filter((_, idx) => this.#selectedShapeIdx!.has(idx))
+                .map(x => x.modelMatrix);
         }
 
-        return this.camera.viewMatrix;
+        return [this.camera.viewMatrix];
     }
 
     draw(gl: WebGLRenderingContext,

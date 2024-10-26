@@ -3,12 +3,13 @@ import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helper
 import { Shape } from "./models/shape";
 import { Position } from "./models/position";
 import { State } from "./models/state";
-import { TranslationTransformation } from "./models/transformations/translationTransformation";
-import { ScaleTransformation } from "./models/transformations/scaleTransformation";
 
 function handleKeyboardKeys(state: State) {
     globalThis.onkeydown = e => {
         switch (e.key) {
+            case "0":
+                state.selectedShapeIdx = Array.from(Array(10), (_, i) => i + 1)
+                break;
             case "1":
             case "2":
             case "3":
@@ -18,22 +19,22 @@ function handleKeyboardKeys(state: State) {
             case "7":
             case "8":
             case "9":
-                state.selectedShapeIdx = +e.key;
+                state.selectedShapeIdx = [+e.key];
                 break;
             case " ":
                 state.selectedShapeIdx = undefined;
                 break;
             case "ArrowDown":
-                mat4.translate(state.selectedShapeMatrix, state.selectedShapeMatrix, [0, -0.2, 0]);
+                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
                 break;
             case "ArrowUp":
-                mat4.translate(state.selectedShapeMatrix, state.selectedShapeMatrix, [0, 0.2, 0]);
+                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0, 0.2, 0]));
                 break;
             case "ArrowLeft":
-                mat4.translate(state.selectedShapeMatrix, state.selectedShapeMatrix, [-0.2, 0, 0]);
+                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [-0.2, 0, 0]));
                 break;
             case "ArrowRight":
-                mat4.translate(state.selectedShapeMatrix, state.selectedShapeMatrix, [0.2, 0, 0]);
+                state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0.2, 0, 0]));
                 break;
         }
     };
@@ -57,11 +58,11 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: State) {
             -(e.y - previousPosition.y) / 50 // Inverse translation of y
         );
 
-        mat4.translate(state.selectedShapeMatrix, state.selectedShapeMatrix, [
-            translationVector.x,
-            translationVector.y,
-            0
-        ]);
+        state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [
+                translationVector.x,
+                translationVector.y,
+                0
+            ]));
 
         previousPosition = new Position(e.x, e.y);
     });
@@ -71,7 +72,7 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: State) {
     });
 
     canvas.onwheel = (e) => {
-        mat4.translate(state.selectedShapeMatrix, state.selectedShapeMatrix, [0, 0, -0.5 * Math.sign(e.deltaY)]);
+        state.selectedShapeMatrix.forEach(m => mat4.translate(m, m, [0, 0, -0.5 * Math.sign(e.deltaY)]));
     };
 }
 
@@ -87,88 +88,44 @@ async function main() {
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-    let pyramid = new Shape(
-        [
-            -0.5, -0.5, 0,   // Vertex 1
-            0.5, -0.5, 0,   // Vertex 2
-            0.5, 0.5, 0,   // Vertex 3
-            -0.5, 0.5, 0,   // Vertex 4
-            0, 0, 1    // Apex
-        ],
-        [
-            // Base face
-            0, 1, 2,
-            0, 2, 3,
+    // Fill the state with pyramids and cubes
+    let state = new State(Array.from(Array(9),
+        (_, i) => i % 2 === 0 ? new Shape(gl, 'cube') : new Shape(gl, 'pyramid')));
 
-            // Side faces
-            0, 1, 4,  // Side 1
-            1, 2, 4,  // Side 2
-            2, 3, 4,  // Side 3
-            3, 0, 4   // Side 4
-        ],
-        gl
-    );
-
-    let cube = new Shape(
-        [
-            // Front face
-            -0.5, -0.5, 0.5,  // Vertex 0
-            0.5, -0.5, 0.5,  // Vertex 1
-            0.5, 0.5, 0.5,  // Vertex 2
-            -0.5, 0.5, 0.5,  // Vertex 3
-
-            // Back face
-            -0.5, -0.5, -0.5,  // Vertex 4
-            0.5, -0.5, -0.5,  // Vertex 5
-            0.5, 0.5, -0.5,  // Vertex 6
-            -0.5, 0.5, -0.5,  // Vertex 7
-
-            // Top face
-            -0.5, 0.5, 0.5,  // Vertex 8 (re-used)
-            0.5, 0.5, 0.5,  // Vertex 9 (re-used)
-            0.5, 0.5, -0.5,  // Vertex 10 (re-used)
-            -0.5, 0.5, -0.5,  // Vertex 11 (re-used)
-
-            // Bottom face
-            -0.5, -0.5, 0.5,  // Vertex 12 (re-used)
-            0.5, -0.5, 0.5,  // Vertex 13 (re-used)
-            0.5, -0.5, -0.5,  // Vertex 14 (re-used)
-            -0.5, -0.5, -0.5,  // Vertex 15 (re-used)
-
-            // Right face
-            0.5, -0.5, 0.5,  // Vertex 16 (re-used)
-            0.5, 0.5, 0.5,  // Vertex 17 (re-used)
-            0.5, 0.5, -0.5,  // Vertex 18 (re-used)
-            0.5, -0.5, -0.5,  // Vertex 19 (re-used)
-
-            // Left face
-            -0.5, -0.5, 0.5,  // Vertex 20 (re-used)
-            -0.5, 0.5, 0.5,  // Vertex 21 (re-used)
-            -0.5, 0.5, -0.5,  // Vertex 22 (re-used)
-            -0.5, -0.5, -0.5   // Vertex 23 (re-used)
-        ],
-        [
-            // Front face
-            0, 1, 2, 0, 2, 3,
-
-            // Back face
-            4, 5, 6, 4, 6, 7,
-
-            // Top face
-            8, 9, 10, 8, 10, 11,
-
-            // Bottom face
-            12, 13, 14, 12, 14, 15,
-
-            // Right face
-            16, 17, 18, 16, 18, 19,
-
-            // Left face
-            20, 21, 22, 20, 22, 23
-        ],
-        gl);
-
-    let state = new State([cube, pyramid]);
+    // Warning: Branch misprediction incoming
+    state.shapes.forEach((s, i) => {
+        switch (i) {
+            case 0:
+                s.translate({ x: -3, y: 3, z: 0 });
+                break;
+            case 1:
+                s.translate({ x: 0, y: 3, z: 0 });
+                break;
+            case 2:
+                s.translate({ x: 3, y: 3, z: 0 });
+                break;
+            case 3:
+                s.translate({ x: -3, y: 0, z: 0 });
+                break;
+            case 4:
+                s.translate({ x: 0, y: 0, z: 0 });
+                break;
+            case 5:
+                s.translate({ x: 3, y: 0, z: 0 });
+                break;
+            case 6:
+                s.translate({ x: -3, y: -3, z: 0 });
+                break;
+            case 7:
+                s.translate({ x: 0, y: -3, z: 0 });
+                break;
+            case 8:
+                s.translate({ x: 3, y: -3, z: 0 });
+                break;
+            default:
+                break;
+        }
+    });
 
     if (vertexShader === undefined || fragmentShader === undefined) {
         console.log("Problem with shaders");
@@ -192,12 +149,6 @@ async function main() {
     // Set up callbacks
     handleKeyboardKeys(state);
     handleMouseInput(canvas, state);
-
-    pyramid.translate(new TranslationTransformation(...[-0.5, -0.5, 0]));
-    pyramid.scale(new ScaleTransformation(...[0.1, 0.1, 0.1]));
-    cube.translate(new TranslationTransformation(...[0.5, 0.5, 0]));
-    cube.scale(new ScaleTransformation(...[0.3, 0.3, 0.3]));
-
 
     // Rendering
     const draw = () => {
