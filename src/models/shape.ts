@@ -8,6 +8,8 @@ export class Shape {
     shapeType: ShapeType
 
     #positionBuffer: WebGLBuffer;
+    #colorsBuffer: WebGLBuffer;
+    #positionIdxBuffer: WebGLBuffer = [];
 
     constructor(gl: WebGLRenderingContext, shapeType: ShapeType) {
         switch (shapeType) {
@@ -21,7 +23,13 @@ export class Shape {
         this.shapeType = shapeType;
 
         this.modelMatrix = mat4.create();
+
         this.#positionBuffer = this.#bufferPositionData(gl);
+        this.#colorsBuffer = this.#bufferColorData(gl);
+
+        if (this.indexArray.length != 0) {
+            this.#positionIdxBuffer = this.#bufferIdxData(gl);
+        }
     }
 
     draw(gl: WebGLRenderingContext,
@@ -32,10 +40,11 @@ export class Shape {
         // Apply model transformation matrix
         gl.uniformMatrix4fv(modelUniformLocation, false, this.modelMatrix);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.#positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.#colorsBuffer);
         gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(colorAttributeLocation);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.#positionBuffer);
         gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(positionAttributeLocation);
 
@@ -46,17 +55,16 @@ export class Shape {
         positionAttributeLocation: number,
         colorAttributeLocation: number) {
 
-        // Draw coordinate axis
-        // Draw local coordinate axes
+        // Draw local coordinate axis
         const axisPositions = new Float32Array([
             0, 0, 0,
-            1, 0, 0, 
+            1, 0, 0,
 
             0, 0, 0,
             0, 1, 0,
 
             0, 0, 0,
-            0, 0, 1  
+            0, 0, 1
         ]);
 
         const axisColors = new Float32Array([
@@ -67,7 +75,7 @@ export class Shape {
             0, 1, 0,
 
             0, 0, 1,
-            0, 0, 1  
+            0, 0, 1
         ]);
 
         // Create and bind the buffer for axis positions
@@ -97,6 +105,20 @@ export class Shape {
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexArray, gl.STATIC_DRAW);
         return positionBuffer;
+    }
+
+    #bufferIdxData(gl: WebGLRenderingContext): WebGLBuffer {
+        let positionIdxBuffer = gl.createBuffer()!;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, positionIdxBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexArray.length, gl.STATIC_DRAW);
+        return positionIdxBuffer;
+    }
+
+    #bufferColorData(gl: WebGLRenderingContext): WebGLBuffer {
+        let colorsBuffer: WebGLBuffer = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.colorsArray, gl.STATIC_DRAW);
+        return colorsBuffer;
     }
 
     #createCube(): [Float32Array, Uint16Array, Float32Array] {
@@ -176,25 +198,7 @@ export class Shape {
                 -0.5, -0.5, -0.5,  // 7 34
                 0.5, -0.5, -0.5,   // 6 35
             ]),
-            new Uint16Array([
-                // Front face
-                0, 1, 2, 0, 2, 3,
-
-                // Back face
-                4, 5, 6, 4, 6, 7,
-
-                // Top face
-                8, 9, 10, 8, 10, 11,
-
-                // Bottom face
-                12, 13, 14, 12, 14, 15,
-
-                // Right face
-                16, 17, 18, 16, 18, 19,
-
-                // Left face
-                20, 21, 22, 20, 22, 23
-            ]),
+            new Uint16Array([]), // Don't need this here
             new Float32Array([
                 // Front face (Red)
                 1.0, 0.0, 0.0, // Vertex 0
@@ -296,41 +300,35 @@ export class Shape {
                 0.5, -0.5, 0.5,  // 1
 
             ]),
-            new Uint16Array([
-                0, 1, 2,
-                0, 2, 3,
-
-                1, 2, 4,
-                0, 4, 1,
-                0, 3, 4,
-                0, 2, 4,
-            ]),
+            new Uint16Array([]),
             new Float32Array([
+                // Basis
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+
+                // Left face
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+
+                // Back face
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+
+                // Right face
                 1.0, 0.0, 1.0,
                 1.0, 0.0, 1.0,
                 1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0,
-                1.0, 0.0, 1.0
+
+                // Front face
+                1.0, 1.0, 0.0,
+                1.0, 1.0, 0.0,
+                1.0, 1.0, 0.0,
             ])
         ]
     }

@@ -43,22 +43,22 @@ function handleKeyboardKeys(state: State) {
                 state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.2]));
                 break;
             case "i":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(10)));
-                break;
-            case "k":
                 state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(-10)));
                 break;
-            case "o":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(10)));
+            case "k":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(10)));
                 break;
-            case "u":
+            case "o":
                 state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(-10)));
                 break;
+            case "u":
+                state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(10)));
+                break;
             case "l":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(10)));
+                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(-10)));
                 break;
             case "j":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(-10)));
+                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(10)));
                 break;
             case "a":
                 state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [0.9, 1, 1]));
@@ -198,7 +198,7 @@ async function main() {
         resizeCanvasToDisplaySize(canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-        gl.clearColor(1.1, 1.1, 1.1, 1);
+        gl.clearColor(141.0 / 255, 153.0 / 255, 174.0 / 255, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         gl.enable(gl.DEPTH_TEST);
