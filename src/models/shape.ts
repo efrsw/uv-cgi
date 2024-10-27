@@ -5,22 +5,46 @@ export class Shape {
     indexArray: Uint16Array;
     colorsArray: Float32Array;
     modelMatrix: mat4;
-    shapeType: ShapeType
+    shapeType: ShapeType | null = null;
 
     #positionBuffer: WebGLBuffer;
     #colorsBuffer: WebGLBuffer;
+    // @ts-ignore
+    // Initially I used models with index buffers, but then decided not to
     #positionIdxBuffer: WebGLBuffer = [];
 
-    constructor(gl: WebGLRenderingContext, shapeType: ShapeType) {
-        switch (shapeType) {
-            case 'cube':
-                [this.vertexArray, this.indexArray, this.colorsArray] = this.#createCube();
-                break;
-            case 'tetrahedron':
-                [this.vertexArray, this.indexArray, this.colorsArray] = this.#createPyramid();
-                break;
+    constructor(gl: WebGLRenderingContext,
+        shapeType: ShapeType | null = null,
+        vertexArray: number[] | null = null,
+        indexArray: number[] | null = null,
+        colorsArray: number[] | null = null) {
+
+        // If shape type is provided, then use my own verticies
+        if (shapeType !== null) {
+            switch (shapeType) {
+                case 'cube':
+                    [this.vertexArray, this.indexArray, this.colorsArray] = this.#createCube();
+                    break;
+                case 'pyramid':
+                    [this.vertexArray, this.indexArray, this.colorsArray] = this.#createPyramid();
+                    break;
+            }
+            this.shapeType = shapeType;
+        } else {
+            this.vertexArray = vertexArray !== null ? new Float32Array(vertexArray) : new Float32Array();
+            this.indexArray = indexArray !== null ? new Uint16Array(indexArray) : new Uint16Array();
+
+            if (colorsArray === null) {
+                this.colorsArray = new Float32Array(Array.from(Array(this.vertexArray.length),
+                    _ => {
+                        let randomColor = Math.random();
+                        return [randomColor, randomColor, randomColor] // Generate random color for a triangle
+                    })
+                    .flat(1));
+            } else {
+                this.colorsArray = new Float32Array(colorsArray);
+            }
         }
-        this.shapeType = shapeType;
 
         this.modelMatrix = mat4.create();
 
@@ -121,84 +145,86 @@ export class Shape {
         return colorsBuffer;
     }
 
+    // I made this coordinates myself, but in the process I several times changed the direction of 
+    // triangles (CCW/CW), so the comments might be a bit off.
     #createCube(): [Float32Array, Uint16Array, Float32Array] {
         return [
             new Float32Array([
                 // Bottom
                 // 0-1
                 // |/|
-                // 7-6
-                -0.5, -0.5, -0.5,  // 7 0
-                -0.5, -0.5, 0.5,   // 0 1
-                0.5, -0.5, 0.5,    // 1 2
+                // 7-6             // Vertex number on picture  Vertex index
+                -0.5, -0.5, 0.5,   // 0                         0
+                -0.5, -0.5, -0.5,  // 7                         1
+                0.5, -0.5, 0.5,    // 1                         2
 
-                -0.5, -0.5, -0.5,  // 7 3
-                0.5, -0.5, 0.5,    // 1 4
-                0.5, -0.5, -0.5,   // 6 5
+                0.5, -0.5, 0.5,    // 1                         3
+                -0.5, -0.5, -0.5,  // 7                         4
+                0.5, -0.5, -0.5,   // 6                         5
 
                 // Top
                 // 4-5
                 // |/|
                 // 3-2
-                -0.5, 0.5, 0.5,    // 3 6
-                -0.5, 0.5, -0.5,   // 4 7
-                0.5, 0.5, -0.5,    // 5 8
+                -0.5, 0.5, -0.5,   // 4                         6
+                -0.5, 0.5, 0.5,    // 3                         7
+                0.5, 0.5, -0.5,    // 5                         8
 
-                0.5, 0.5, -0.5,    // 5 9
-                0.5, 0.5, 0.5,     // 2 10
-                -0.5, 0.5, 0.5,    // 3 11
+                0.5, 0.5, 0.5,     // 2                         9
+                0.5, 0.5, -0.5,    // 5                         10
+                -0.5, 0.5, 0.5,    // 3                         11
 
 
                 // Right
                 // 2-5
                 // |/|
                 // 1-6
-                0.5, -0.5, 0.5,    // 1 12
-                0.5, 0.5, 0.5,     // 2 13
-                0.5, 0.5, -0.5,    // 5 14
+                0.5, 0.5, 0.5,     // 2                         12
+                0.5, -0.5, 0.5,    // 1                         13
+                0.5, 0.5, -0.5,    // 5                         14
 
 
-                0.5, 0.5, -0.5,    // 5 15
-                0.5, -0.5, -0.5,   // 6 16
-                0.5, -0.5, 0.5,    // 1 17
+                0.5, -0.5, -0.5,   // 6                         15
+                0.5, 0.5, -0.5,    // 5                         16
+                0.5, -0.5, 0.5,    // 1                         17
 
                 // Left
                 // 4-3
                 // |/|
                 // 7-0
-                -0.5, -0.5, -0.5,  // 7 18
-                -0.5, 0.5, -0.5,   // 4 19
-                -0.5, 0.5, 0.5,    // 3 20
+                -0.5, 0.5, -0.5,   // 4                         18
+                -0.5, -0.5, -0.5,  // 7                         19
+                -0.5, 0.5, 0.5,    // 3                         20
 
-                -0.5, 0.5, 0.5,    // 3 21
-                -0.5, -0.5, 0.5,   // 0 22
-                -0.5, -0.5, -0.5,  // 7 23
+                -0.5, -0.5, 0.5,   // 0                         21
+                -0.5, 0.5, 0.5,    // 3                         22
+                -0.5, -0.5, -0.5,  // 7                         23
 
                 // Front
                 // 3-2
                 // |/|
                 // 0-1
-                -0.5, -0.5, 0.5,   // 0 24
-                -0.5, 0.5, 0.5,    // 3 25
-                0.5, 0.5, 0.5,     // 2 26
+                -0.5, 0.5, 0.5,    // 3                         24
+                -0.5, -0.5, 0.5,   // 0                         25
+                0.5, 0.5, 0.5,     // 2                         26
 
-                -0.5, -0.5, 0.5,   // 0 27
-                0.5, 0.5, 0.5,     // 2 28
-                0.5, -0.5, 0.5,    // 1 29
+                0.5, 0.5, 0.5,     // 2                         27
+                -0.5, -0.5, 0.5,   // 0                         28
+                0.5, -0.5, 0.5,    // 1                         29
 
                 // Back
                 // 5-4
                 // |/|
                 // 6-7
-                -0.5, 0.5, -0.5,   // 4 30
-                0.5, -0.5, -0.5,   // 6 31
-                0.5, 0.5, -0.5,    // 5 32
+                0.5, -0.5, -0.5,   // 6                         30
+                -0.5, 0.5, -0.5,   // 4                         31
+                0.5, 0.5, -0.5,    // 5                         32
 
-                -0.5, 0.5, -0.5,   // 4 33
-                -0.5, -0.5, -0.5,  // 7 34
-                0.5, -0.5, -0.5,   // 6 35
+                -0.5, -0.5, -0.5,  // 7                         33
+                -0.5, 0.5, -0.5,   // 4                         34
+                0.5, -0.5, -0.5,   // 6                         35
             ]),
-            new Uint16Array([]), // Don't need this here
+            new Uint16Array([]), // Decided to not use indexed arrays, because of color issues
             new Float32Array([
                 // Front face (Red)
                 1.0, 0.0, 0.0, // Vertex 0
@@ -259,45 +285,45 @@ export class Shape {
                 // 3-2
                 // |/|
                 // 0-1
-                -0.5, -0.5, 0.5,  // 0 0
-                0.5, -0.5, -0.5,  // 2 2
-                -0.5, -0.5, -0.5, // 3 5
+                0.5, -0.5, -0.5,  // 2 0
+                -0.5, -0.5, 0.5,  // 0 1
+                -0.5, -0.5, -0.5, // 3 2
 
-                -0.5, -0.5, 0.5,  // 0 0
-                0.5, -0.5, 0.5,   // 1 1
-                0.5, -0.5, -0.5,  // 2 2
+                0.5, -0.5, 0.5,   // 1 3
+                -0.5, -0.5, 0.5,  // 0 4
+                0.5, -0.5, -0.5,  // 2 5
 
                 // Left face
                 //   4
                 //  / \
                 // 3---0
-                -0.5, -0.5, -0.5, // 3 5
-                0.0, 0.5, 0.0,   // 4 
-                -0.5, -0.5, 0.5,  // 0 0
+                0.0, 0.5, 0.0,    // 4 6 
+                -0.5, -0.5, -0.5, // 3 7
+                -0.5, -0.5, 0.5,  // 0 8
 
                 // Back face
                 //   4
                 //  / \
                 // 2---3
-                0.5, -0.5, -0.5,  // 2 2
-                0.0, 0.5, 0.0,   // 4 
-                -0.5, -0.5, -0.5, // 3 5
+                0.0, 0.5, 0.0,    // 4 9
+                0.5, -0.5, -0.5,  // 2 10
+                -0.5, -0.5, -0.5, // 3 11
 
                 // Right face
                 //   4
                 //  / \
                 // 1---2
-                0.5, -0.5, 0.5,  // 1
-                0.0, 0.5, 0.0,   // 4 
-                0.5, -0.5, -0.5,  // 2 2
+                0.0, 0.5, 0.0,    // 4 12
+                0.5, -0.5, 0.5,   // 1 13
+                0.5, -0.5, -0.5,  // 2 14
 
                 // Front face
                 //   4
                 //  / \
                 // 0---1
-                -0.5, -0.5, 0.5,  // 0 0
-                0.0, 0.5, 0.0,   // 4 
-                0.5, -0.5, 0.5,  // 1
+                0.0, 0.5, 0.0,    // 4 15
+                -0.5, -0.5, 0.5,  // 0 16
+                0.5, -0.5, 0.5,   // 1 17
 
             ]),
             new Uint16Array([]),
@@ -335,11 +361,5 @@ export class Shape {
 }
 
 export type ShapeType =
-    | "tetrahedron"
+    | "pyramid"
     | "cube"
-
-export type Coordinates = {
-    x: number,
-    y: number,
-    z: number
-}

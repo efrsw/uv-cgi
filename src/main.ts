@@ -3,6 +3,7 @@ import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helper
 import { Shape } from "./models/shape";
 import { Position } from "./models/position";
 import { State } from "./models/state";
+import { Parser } from "./models/parser";
 
 function handleKeyboardKeys(state: State) {
     globalThis.onkeydown = e => {
@@ -131,10 +132,14 @@ async function main() {
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
     // Fill the state with pyramids and cubes
-    let state = new State(Array.from(Array(9),
-        (_, i) => i % 2 === 0 ? new Shape(gl, 'cube') : new Shape(gl, 'tetrahedron')));
+    let state = new State(Array.from(Array(5),
+        (_, i) => i % 2 === 0 ? new Shape(gl, 'cube') : new Shape(gl, 'pyramid')));
 
-    // Warning: Branch misprediction incoming
+    let parser = new Parser();
+    let objects = await parser.parseFiles();
+    objects.forEach(o => state.shapes.push(new Shape(gl, null, o.vertexArray, null, null)));
+
+    // Move shapes to their initial positions
     state.shapes.forEach((s, i) => {
         switch (i) {
             case 0:
@@ -203,7 +208,7 @@ async function main() {
 
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.FRONT);
+        gl.cullFace(gl.BACK);
 
         gl.useProgram(program);
 
