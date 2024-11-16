@@ -49,7 +49,7 @@ export class Shape {
 
         // Apply model transformation matrix
         gl.uniformMatrix4fv(modelUniformLocation, false, this.modelMatrix);
-        gl.uniformMatrix4fv(normalULocation, false, this.normalMatrix);
+        gl.uniformMatrix3fv(normalULocation, false, this.normalMatrix);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.#positionBuffer);
         gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
