@@ -2,20 +2,20 @@ import { mat4 } from "gl-matrix";
 import { Shape } from "./shape";
 import { Camera } from "./camera";
 
-export class State {
+export class Scene {
     shapes: Shape[]
     camera: Camera
-    projectionMatrix: mat4;
 
-    #selectedShapeIdx: Set<number> | undefined;
+    #projectionMatrix: mat4;
+    #selectedShapeIdx: Set<number> | null = null;
 
     constructor(shapes: Shape[]) {
         this.shapes = shapes;
-        this.projectionMatrix = mat4.create();
+        this.#projectionMatrix = mat4.create();
         this.camera = new Camera();
 
         mat4.perspective(
-            this.projectionMatrix,
+            this.#projectionMatrix,
             (45 * Math.PI) / 180,
             4 / 3,
             0.1,
@@ -23,15 +23,15 @@ export class State {
         );
     }
 
-    set selectedShapeIdx(selectedIndex: number[] | undefined) {
-        if (selectedIndex !== undefined)
+    set selectedShapeIdx(selectedIndex: number[] | null) {
+        if (selectedIndex !== null)
             this.#selectedShapeIdx = new Set([...selectedIndex.map(i => i - 1)]); // Indecies in the array are one below the user input
         else
             this.#selectedShapeIdx = selectedIndex // Assign undefined, which means that camera is selected
     }
 
     get selectedShapeMatricies() {
-        if (this.#selectedShapeIdx !== undefined) {
+        if (this.#selectedShapeIdx !== null) {
             return this.shapes
                 .filter((_, idx) => this.#selectedShapeIdx!.has(idx))
                 .map(x => x.modelMatrix);
@@ -47,10 +47,12 @@ export class State {
         projectionULocation: WebGLUniformLocation | null,
         modelULocation: WebGLUniformLocation | null,
         lightViewSpacePositionLocation: WebGLUniformLocation | null,
-        normalULocation: WebGLUniformLocation | null
+        normalULocation: WebGLUniformLocation | null,
+        eyeULocation: WebGLUniformLocation | null
     ) {
-        gl.uniformMatrix4fv(projectionULocation, false, this.projectionMatrix);
+        gl.uniformMatrix4fv(projectionULocation, false, this.#projectionMatrix);
         gl.uniform3fv(lightViewSpacePositionLocation, new Float32Array([0, 10, 0]));
+        gl.uniform3fv(eyeULocation, new Float32Array(this.camera.eye)); // Since we do not move camera, we can use its original position
 
         this.shapes.forEach((shape, idx) => {
             shape.draw(gl,

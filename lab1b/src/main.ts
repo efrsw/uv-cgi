@@ -2,10 +2,10 @@ import { glMatrix, mat4 } from "gl-matrix";
 import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helpers";
 import { Shape } from "./models/shape";
 import { Position } from "./models/position";
-import { State } from "./models/state";
+import { Scene } from "./models/scene";
 import { Parser } from "./models/parser";
 
-function handleKeyboardKeys(state: State) {
+function handleKeyboardKeys(state: Scene) {
     globalThis.onkeydown = e => {
         switch (e.key) {
             case "0":
@@ -23,7 +23,7 @@ function handleKeyboardKeys(state: State) {
                 state.selectedShapeIdx = [+e.key];
                 break;
             case " ":
-                state.selectedShapeIdx = undefined;
+                state.selectedShapeIdx = null;
                 break;
             case "ArrowDown":
                 state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
@@ -83,7 +83,7 @@ function handleKeyboardKeys(state: State) {
     };
 }
 
-function handleMouseInput(canvas: HTMLCanvasElement, state: State) {
+function handleMouseInput(canvas: HTMLCanvasElement, state: Scene) {
     let isMoving = false;
     let previousPosition = new Position();
 
@@ -125,13 +125,13 @@ async function main() {
     let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
     let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-        fetch("/src/shaders/gouraud/gouraud_vertex_diffuse.glsl").then(x => x.text()),
-        fetch("/src/shaders/gouraud/gouraud_fragment_diffuse.glsl").then(x => x.text())]);
+        fetch("/src/shaders/gouraud/gouraud_vertex_specular.glsl").then(x => x.text()),
+        fetch("/src/shaders/gouraud/gouraud_fragment_specular.glsl").then(x => x.text())]);
 
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-    let state = new State([]);
+    let state = new Scene([]);
     let parser = new Parser();
     let objects = await parser.parseFiles();
 
@@ -190,6 +190,7 @@ async function main() {
     let projectionULocation = gl.getUniformLocation(program, "u_projection");
     let lightViewSpacePositionLocation = gl.getUniformLocation(program, "u_lightPosition");
     let normalULocation = gl.getUniformLocation(program, "u_normal");
+    let eyeULocation = gl.getUniformLocation(program, "u_eye");
 
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     let normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
@@ -220,7 +221,8 @@ async function main() {
             projectionULocation,
             modelULocation,
             lightViewSpacePositionLocation,
-            normalULocation
+            normalULocation,
+            eyeULocation        
         );
 
         window.requestAnimationFrame(draw);
