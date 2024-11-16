@@ -2,10 +2,11 @@ import { ObjModel } from "./objModel";
 
 export class Parser {
     #paths = [
-        "/src/public/bunny.obj",
-        "/src/public/cube.obj",
+        // "/src/public/bunny.obj",
+        // "/src/public/cube.obj",
         "/src/public/teapot.obj",
-        "/src/public/tetrahedron.obj"
+        "/src/public/sphere.obj",
+        // "/src/public/tetrahedron.obj"
     ];
 
     async parseFiles() {

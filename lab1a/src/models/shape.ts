@@ -35,10 +35,10 @@ export class Shape {
             this.indexArray = indexArray !== null ? new Uint16Array(indexArray) : new Uint16Array();
 
             if (colorsArray === null) {
+                let randomColor = Math.random();
                 this.colorsArray = new Float32Array(Array.from(Array(this.vertexArray.length),
                     _ => {
-                        let randomColor = Math.random();
-                        return [randomColor, randomColor, randomColor] // Generate random color for a triangle
+                        return [0.5, randomColor, randomColor] // Generate random color for a triangle
                     })
                     .flat(1));
             } else {

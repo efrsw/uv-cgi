@@ -9,7 +9,7 @@ function handleKeyboardKeys(state: State) {
     globalThis.onkeydown = e => {
         switch (e.key) {
             case "0":
-                state.selectedShapeIdx = Array.from(Array(10), (_, i) => i + 1)
+                state.selectedShapeIdx = Array.from(Array(state.shapes.length), (_, i) => i + 1)
                 break;
             case "1":
             case "2":
@@ -102,10 +102,10 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: State) {
         );
 
         state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [
-                translationVector.x,
-                translationVector.y,
-                0
-            ]));
+            translationVector.x,
+            translationVector.y,
+            0
+        ]));
 
         previousPosition = new Position(e.x, e.y);
     });
@@ -125,19 +125,17 @@ async function main() {
     let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
     let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-        fetch("/src/shaders/vertex.glsl").then(x => x.text()),
-        fetch("/src/shaders/fragment.glsl").then(x => x.text())]);
+        fetch("/src/shaders/gouraud/gouraud_ve.glsl").then(x => x.text()),
+        fetch("/src/shaders/gouraud/gouraud_fr.glsl").then(x => x.text())]);
 
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-    // Fill the state with pyramids and cubes
-    let state = new State(Array.from(Array(5),
-        (_, i) => i % 2 === 0 ? new Shape(gl, 'cube') : new Shape(gl, 'pyramid')));
-
+    let state = new State([]);
     let parser = new Parser();
     let objects = await parser.parseFiles();
-    objects.forEach(o => state.shapes.push(new Shape(gl, null, o.vertexArray, null, null)));
+
+    objects.forEach(o => state.shapes.push(new Shape(gl, o.vertexArray, [], o.normalsArray)));
 
     // Move shapes to their initial positions
     state.shapes.forEach((s, i) => {
@@ -190,9 +188,11 @@ async function main() {
     let modelULocation = gl.getUniformLocation(program, "u_model");
     let viewULocation = gl.getUniformLocation(program, "u_view");
     let projectionULocation = gl.getUniformLocation(program, "u_projection");
+    let lightViewSpacePositionLocation = gl.getUniformLocation(program, "u_lightViewSpacePosition");
+    let normalULocation = gl.getUniformLocation(program, "u_normal");
 
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-    let colorAttributeLocation = gl.getAttribLocation(program, "a_color");
+    let normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
 
     // Set up callbacks
     handleKeyboardKeys(state);
@@ -214,7 +214,14 @@ async function main() {
 
         gl.uniformMatrix4fv(viewULocation, false, state.camera.viewMatrix);
 
-        state.draw(gl, positionAttributeLocation, colorAttributeLocation, projectionULocation, modelULocation);
+        state.draw(gl,
+            positionAttributeLocation,
+            normalAttributeLocation,
+            projectionULocation,
+            modelULocation,
+            lightViewSpacePositionLocation,
+            normalULocation
+        );
 
         window.requestAnimationFrame(draw);
     }
