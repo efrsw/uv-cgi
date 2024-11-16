@@ -125,8 +125,8 @@ async function main() {
     let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
     let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-        fetch("/src/shaders/gouraud/gouraud_ve.glsl").then(x => x.text()),
-        fetch("/src/shaders/gouraud/gouraud_fr.glsl").then(x => x.text())]);
+        fetch("/src/shaders/gouraud/gouraud_vertex_diffuse.glsl").then(x => x.text()),
+        fetch("/src/shaders/gouraud/gouraud_fragment_diffuse.glsl").then(x => x.text())]);
 
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
@@ -188,7 +188,7 @@ async function main() {
     let modelULocation = gl.getUniformLocation(program, "u_model");
     let viewULocation = gl.getUniformLocation(program, "u_view");
     let projectionULocation = gl.getUniformLocation(program, "u_projection");
-    let lightViewSpacePositionLocation = gl.getUniformLocation(program, "u_lightViewSpacePosition");
+    let lightViewSpacePositionLocation = gl.getUniformLocation(program, "u_lightPosition");
     let normalULocation = gl.getUniformLocation(program, "u_normal");
 
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");

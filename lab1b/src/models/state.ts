@@ -50,6 +50,7 @@ export class State {
         normalULocation: WebGLUniformLocation | null
     ) {
         gl.uniformMatrix4fv(projectionULocation, false, this.projectionMatrix);
+        gl.uniform3fv(lightViewSpacePositionLocation, new Float32Array([0, 10, 0]));
 
         this.shapes.forEach((shape, idx) => {
             shape.draw(gl,
