@@ -66,13 +66,13 @@ export class Shape implements IDrawable {
         // Draw local coordinate axis
         const axisPositions = new Float32Array([
             0, 0, 0,
-            3, 0, 0,
+            0.15, 0, 0,
 
             0, 0, 0,
-            0, 3, 0,
+            0, 0.15, 0,
 
             0, 0, 0,
-            0, 0, 3
+            0, 0, 0.15
         ]);
 
         const axisColors = new Float32Array([

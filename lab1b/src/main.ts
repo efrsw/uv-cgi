@@ -25,7 +25,7 @@ function handleKeyboardKeys(scene: Scene, renderer: Renderer) {
                 scene.selectObjectAtIndex = null;
                 break;
             case "L":
-                scene.selectLight();
+                scene.toggleLight();
                 break;
             case "ArrowDown":
                 scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
@@ -110,8 +110,8 @@ function handleMouseInput(canvas: HTMLCanvasElement, scene: Scene) {
         if (!isMoving) return;
 
         let translationVector = new Position(
-            (e.x - previousPosition.x) / 50, // Inverse translation of x
-            -(e.y - previousPosition.y) / 50 // Inverse translation of y
+            (e.x - previousPosition.x) / 150, // Inverse translation of x
+            -(e.y - previousPosition.y) / 150 // Inverse translation of y
         );
 
         scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [

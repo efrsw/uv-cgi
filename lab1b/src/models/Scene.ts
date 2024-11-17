@@ -29,7 +29,7 @@ export class Scene {
     }
 
     get selectedShapeMatricies() {
-        switch(this.#selectedObject) {
+        switch (this.#selectedObject) {
             case "object":
                 return [this.shapes[this.#selectedShapeIdx!].modelMatrix];
             case "world":
@@ -49,11 +49,16 @@ export class Scene {
         }
     }
 
-    selectLight() {
-        this.#selectedObject = "light";
+    toggleLight() {
+        if (this.#selectedObject === "light") {
+            this.#selectedObject = "world";
+        } else {
+            this.#selectedObject = "light";
+        }
+
         this.#selectedShapeIdx = -1;
     }
-    
+
     get sceneObjects(): IDrawable[] {
         return [...this.shapes, this.light];
     }
