@@ -23,7 +23,7 @@ function handleKeyboardKeys(scene: Scene) {
             case " ":
                 scene.selectObjectAtIndex = null;
                 break;
-            case "l":
+            case "L":
                 scene.selectLight();
                 break;
             case "ArrowDown":
@@ -125,8 +125,8 @@ async function main() {
     let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
     let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-        fetch("/src/shaders/gouraud/gouraud_vertex_specular.glsl").then(x => x.text()),
-        fetch("/src/shaders/gouraud/gouraud_fragment_specular.glsl").then(x => x.text())]);
+        fetch("/src/shaders/phong/phong_vertex_specular.glsl").then(x => x.text()),
+        fetch("/src/shaders/phong/phong_fragment_specular.glsl").then(x => x.text())]);
 
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);

@@ -30,7 +30,7 @@ void main() {
     float specularIntensity = pow(max(0.0, dot(E,R)), 32.0);
     vec3 specularColor = a_color * specularIntensity * vec3(1.0, 1.0, 1.0);
 
-    v_color = vec4(diffuseColor + specularColor + ambientColor, 1.0);
+    v_color = vec4(specularColor + ambientColor, 1.0);
 
     gl_Position = u_projection * viewPosition;
 }
