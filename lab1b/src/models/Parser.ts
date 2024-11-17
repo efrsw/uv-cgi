@@ -1,13 +1,13 @@
-import { ObjModel } from "./objModel";
+import { ObjModel } from "./ObjModel";
 
 export class Parser {
     #paths = [
-        // "/src/public/bunny.obj",
-        // "/src/public/cube.obj",
-        "/src/public/sphere.obj",
+        "/src/public/bunny.obj",
+        "/src/public/cube.obj",
         "/src/public/teapot.obj",
         "/src/public/sphere.obj",
-        // "/src/public/tetrahedron.obj"
+        "/src/public/sphere.obj",
+        "/src/public/sphere.obj",
     ];
 
     async parseFiles() {

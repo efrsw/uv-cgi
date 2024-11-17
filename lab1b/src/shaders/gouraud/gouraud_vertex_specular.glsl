@@ -7,26 +7,28 @@ uniform mat4 u_view;
 uniform mat4 u_projection;
 
 uniform mat3 u_normal;
-uniform vec4 u_lightPosition;
+uniform mat4 u_light;
 
 varying vec4 v_color;
 
 void main() {
+    vec3 lightSource = vec3(0.0, 10.0, 0.0); // Initial light position
+
     vec4 viewPosition = u_view * u_model * vec4(a_position, 1.0);
-    vec4 lightPosition = u_view * u_lightPosition;
+    vec4 lightPosition = u_view * u_light * vec4(lightSource, 1.0);
 
     vec3 L = normalize(lightPosition.xyz - viewPosition.xyz);
     vec3 N = normalize(u_normal * a_normal);
     vec3 E = normalize(vec3(0.0, 0.0, 0.0) - viewPosition.xyz);
     vec3 R = normalize(reflect(-L, N));
 
-    vec3 ambientColor = a_color * vec3(0.2, 0.2, 0.2);
+    vec3 ambientColor = a_color * vec3(0.1, 0.1, 0.1);
 
     float diffuseIntensity = max(0.0, dot(L, N));
-    vec3 diffuseColor = a_color * diffuseIntensity * vec3(0.5, 0.5, 0.5);
+    vec3 diffuseColor = a_color * diffuseIntensity * vec3(1.0, 1.0, 1.0);
 
     float specularIntensity = pow(max(0.0, dot(E,R)), 32.0);
-    vec3 specularColor = a_color * specularIntensity * vec3(0.9, 0.9, 0.9);
+    vec3 specularColor = a_color * specularIntensity * vec3(1.0, 1.0, 1.0);
 
     v_color = vec4(diffuseColor + specularColor + ambientColor, 1.0);
 

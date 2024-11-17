@@ -1,6 +1,7 @@
 import { mat3, mat4 } from "gl-matrix";
+import { IDrawable } from "./IDrawable";
 
-export class Shape {
+export class Shape implements IDrawable {
     vertexArray: Float32Array;
     colorArray: Float32Array;
     normalsArray: Float32Array;
@@ -37,7 +38,6 @@ export class Shape {
         normalAttributeLocation: number,
         colorAttributeLocation: number,
         modelUniformLocation: WebGLUniformLocation | null,
-        lightViewSpacePositionLocation: WebGLUniformLocation | null,
         normalULocation: WebGLUniformLocation | null) {
 
         // Apply model transformation matrix

@@ -1,10 +1,9 @@
 import { glMatrix, mat4 } from "gl-matrix";
 import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helpers";
-import { Shape } from "./models/shape";
-import { Position } from "./models/position";
-import { Scene } from "./models/scene";
-import { Parser } from "./models/parser";
-import { ObjModel } from "./models/objModel";
+import { Shape } from "./models/Shape";
+import { Position } from "./models/Position";
+import { Scene } from "./models/Scene";
+import { Parser } from "./models/Parser";
 
 function handleKeyboardKeys(scene: Scene) {
     globalThis.onkeydown = e => {
@@ -85,7 +84,7 @@ function handleKeyboardKeys(scene: Scene) {
     };
 }
 
-function handleMouseInput(canvas: HTMLCanvasElement, state: Scene) {
+function handleMouseInput(canvas: HTMLCanvasElement, scene: Scene) {
     let isMoving = false;
     let previousPosition = new Position();
 
@@ -97,13 +96,12 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: Scene) {
     canvas.addEventListener('mousemove', e => {
         if (!isMoving) return;
 
-        // TODO: The speed of the pointer and the translation is somewhat off
         let translationVector = new Position(
             (e.x - previousPosition.x) / 50, // Inverse translation of x
             -(e.y - previousPosition.y) / 50 // Inverse translation of y
         );
 
-        state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [
+        scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [
             translationVector.x,
             translationVector.y,
             0
@@ -117,7 +115,7 @@ function handleMouseInput(canvas: HTMLCanvasElement, state: Scene) {
     });
 
     canvas.onwheel = (e) => {
-        state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.5 * Math.sign(e.deltaY)]));
+        scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.5 * Math.sign(e.deltaY)]));
     };
 }
 
@@ -135,9 +133,7 @@ async function main() {
 
     let parser = new Parser();
     let objects = await parser.parseFiles();
-    let sun = objects.shift() as ObjModel;
-    let yellowColors = Array.from(Array(sun.vertexArray.length), _ => [1.0, 1.0, 0.0]).flat(1);
-    let scene = new Scene([], new Shape(gl, sun.vertexArray, yellowColors, sun.normalsArray));
+    let scene = new Scene([]);
 
     objects.forEach(o => {
         let defaultColors = Array.from(Array(o.vertexArray.length), _ => [0.0, 1.0, 0.0])
@@ -145,31 +141,30 @@ async function main() {
         scene.shapes.push(new Shape(gl, o.vertexArray, defaultColors, o.normalsArray));
     });
 
-    // Move sun to the initial position
-    mat4.translate(scene.light.modelMatrix, scene.light.modelMatrix, [0, 10, 0]);
-    mat4.scale(scene.light.modelMatrix, scene.light.modelMatrix, [0.25, 0.25, 0.25])
-
     // Move shapes to their initial positions
     scene.shapes.forEach((s, i) => {
         switch (i) {
             case 0:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [-3, 3, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [6, 6, 6])
                 break;
             case 1:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [0, 3, 0])
-                mat4.scale(s.modelMatrix, s.modelMatrix, [0.5, 0.5, 0.5])
                 break;
             case 2:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [3, 3, 0])
                 break;
             case 3:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [-3, 0, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [0.25, 0.25, 0.25])
                 break;
             case 4:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [0, 0, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [0.25, 0.25, 0.25])
                 break;
             case 5:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [3, 0, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [0.25, 0.25, 0.25])
                 break;
             case 6:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [-3, -3, 0])
@@ -201,7 +196,7 @@ async function main() {
     let modelULocation = gl.getUniformLocation(program, "u_model");
     let viewULocation = gl.getUniformLocation(program, "u_view");
     let projectionULocation = gl.getUniformLocation(program, "u_projection");
-    let lightPositionULocation = gl.getUniformLocation(program, "u_lightPosition");
+    let lightPositionULocation = gl.getUniformLocation(program, "u_light");
     let normalULocation = gl.getUniformLocation(program, "u_normal");
 
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
