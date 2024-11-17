@@ -4,13 +4,11 @@ import { Shape } from "./models/shape";
 import { Position } from "./models/position";
 import { Scene } from "./models/scene";
 import { Parser } from "./models/parser";
+import { ObjModel } from "./models/objModel";
 
-function handleKeyboardKeys(state: Scene) {
+function handleKeyboardKeys(scene: Scene) {
     globalThis.onkeydown = e => {
         switch (e.key) {
-            case "0":
-                state.selectedShapeIdx = Array.from(Array(state.shapes.length), (_, i) => i + 1)
-                break;
             case "1":
             case "2":
             case "3":
@@ -20,64 +18,68 @@ function handleKeyboardKeys(state: Scene) {
             case "7":
             case "8":
             case "9":
-                state.selectedShapeIdx = [+e.key];
+                scene.selectObjectAtIndex = +e.key;
                 break;
+            case "0":
             case " ":
-                state.selectedShapeIdx = null;
-                break;
-            case "ArrowDown":
-                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
-                break;
-            case "ArrowUp":
-                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0.2, 0]));
-                break;
-            case "ArrowLeft":
-                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [-0.2, 0, 0]));
-                break;
-            case "ArrowRight":
-                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0.2, 0, 0]));
-                break;
-            case ",":
-                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, 0.2]));
-                break;
-            case ".":
-                state.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.2]));
-                break;
-            case "i":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(-10)));
-                break;
-            case "k":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(10)));
-                break;
-            case "o":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(-10)));
-                break;
-            case "u":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(10)));
+                scene.selectObjectAtIndex = null;
                 break;
             case "l":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(-10)));
+                scene.selectLight();
+                break;
+            case "ArrowDown":
+                scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, -0.2, 0]));
+                break;
+            case "ArrowUp":
+                scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0.2, 0]));
+                break;
+            case "ArrowLeft":
+                scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [-0.2, 0, 0]));
+                break;
+            case "ArrowRight":
+                scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0.2, 0, 0]));
+                break;
+            case ",":
+                scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, 0.2]));
+                break;
+            case ".":
+                scene.selectedShapeMatricies.forEach(m => mat4.translate(m, m, [0, 0, -0.2]));
+                break;
+            case "i":
+                scene.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(-10)));
+                break;
+            case "k":
+                scene.selectedShapeMatricies.forEach(m => mat4.rotateX(m, m, glMatrix.toRadian(10)));
+                break;
+            case "o":
+                scene.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(-10)));
+                break;
+            case "u":
+                scene.selectedShapeMatricies.forEach(m => mat4.rotateY(m, m, glMatrix.toRadian(10)));
+                break;
+            case "l":
+                scene.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(-10)));
                 break;
             case "j":
-                state.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(10)));
+                scene.selectedShapeMatricies.forEach(m => mat4.rotateZ(m, m, glMatrix.toRadian(10)));
                 break;
             case "a":
-                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [0.9, 1, 1]));
+                scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [0.9, 1, 1]));
                 break;
             case "A":
-                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1.1, 1, 1]));
+                scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1.1, 1, 1]));
                 break;
             case "b":
-                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 0.9, 1]));
+                scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 0.9, 1]));
                 break;
             case "B":
-                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1.1, 1]));
+                scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1.1, 1]));
                 break;
             case "c":
-                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 0.9]));
+                scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 0.9]));
                 break;
             case "C":
-                state.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 1.1]));
+                scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 1.1]));
                 break;
         }
     };
@@ -131,20 +133,31 @@ async function main() {
     let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-    let state = new Scene([]);
     let parser = new Parser();
     let objects = await parser.parseFiles();
+    let sun = objects.shift() as ObjModel;
+    let yellowColors = Array.from(Array(sun.vertexArray.length), _ => [1.0, 1.0, 0.0]).flat(1);
+    let scene = new Scene([], new Shape(gl, sun.vertexArray, yellowColors, sun.normalsArray));
 
-    objects.forEach(o => state.shapes.push(new Shape(gl, o.vertexArray, [], o.normalsArray)));
+    objects.forEach(o => {
+        let defaultColors = Array.from(Array(o.vertexArray.length), _ => [0.0, 1.0, 0.0])
+            .flat(1);
+        scene.shapes.push(new Shape(gl, o.vertexArray, defaultColors, o.normalsArray));
+    });
+
+    // Move sun to the initial position
+    mat4.translate(scene.light.modelMatrix, scene.light.modelMatrix, [0, 10, 0]);
+    mat4.scale(scene.light.modelMatrix, scene.light.modelMatrix, [0.25, 0.25, 0.25])
 
     // Move shapes to their initial positions
-    state.shapes.forEach((s, i) => {
+    scene.shapes.forEach((s, i) => {
         switch (i) {
             case 0:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [-3, 3, 0])
                 break;
             case 1:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [0, 3, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [0.5, 0.5, 0.5])
                 break;
             case 2:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [3, 3, 0])
@@ -188,16 +201,16 @@ async function main() {
     let modelULocation = gl.getUniformLocation(program, "u_model");
     let viewULocation = gl.getUniformLocation(program, "u_view");
     let projectionULocation = gl.getUniformLocation(program, "u_projection");
-    let lightViewSpacePositionLocation = gl.getUniformLocation(program, "u_lightPosition");
+    let lightPositionULocation = gl.getUniformLocation(program, "u_lightPosition");
     let normalULocation = gl.getUniformLocation(program, "u_normal");
-    let eyeULocation = gl.getUniformLocation(program, "u_eye");
 
     let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     let normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
+    let colorAttributeLocation = gl.getAttribLocation(program, "a_color");
 
     // Set up callbacks
-    handleKeyboardKeys(state);
-    handleMouseInput(canvas, state);
+    handleKeyboardKeys(scene);
+    handleMouseInput(canvas, scene);
 
     // Rendering
     const draw = () => {
@@ -213,16 +226,16 @@ async function main() {
 
         gl.useProgram(program);
 
-        gl.uniformMatrix4fv(viewULocation, false, state.camera.viewMatrix);
+        gl.uniformMatrix4fv(viewULocation, false, scene.camera.viewMatrix);
 
-        state.draw(gl,
+        scene.draw(gl,
             positionAttributeLocation,
             normalAttributeLocation,
+            colorAttributeLocation,
             projectionULocation,
             modelULocation,
-            lightViewSpacePositionLocation,
-            normalULocation,
-            eyeULocation        
+            lightPositionULocation,
+            normalULocation
         );
 
         window.requestAnimationFrame(draw);

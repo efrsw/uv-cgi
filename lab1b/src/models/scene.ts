@@ -1,16 +1,19 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec3, vec4 } from "gl-matrix";
 import { Shape } from "./shape";
 import { Camera } from "./camera";
 
 export class Scene {
     shapes: Shape[]
     camera: Camera
+    light: Shape
 
     #projectionMatrix: mat4;
-    #selectedShapeIdx: Set<number> | null = null;
+    #selectedShapeIdx: number | null = null;
+    #selectedObject: SelectedObject = "world";
 
-    constructor(shapes: Shape[]) {
+    constructor(shapes: Shape[], light: Shape) {
         this.shapes = shapes;
+        this.light = light;
         this.#projectionMatrix = mat4.create();
         this.camera = new Camera();
 
@@ -23,47 +26,65 @@ export class Scene {
         );
     }
 
-    set selectedShapeIdx(selectedIndex: number[] | null) {
-        if (selectedIndex !== null)
-            this.#selectedShapeIdx = new Set([...selectedIndex.map(i => i - 1)]); // Indecies in the array are one below the user input
-        else
+    set selectObjectAtIndex(selectedIndex: number | null) {
+        if (selectedIndex !== null) {
+            this.#selectedShapeIdx = selectedIndex - 1; // Indecies in the array are one below the user input
+            this.#selectedObject = "object";
+        } else {
             this.#selectedShapeIdx = selectedIndex // Assign undefined, which means that camera is selected
+            this.#selectedObject = "world";
+        }
+    }
+
+    selectLight() {
+        this.#selectedObject = "light";
+        this.#selectedShapeIdx = -1;
     }
 
     get selectedShapeMatricies() {
-        if (this.#selectedShapeIdx !== null) {
-            return this.shapes
-                .filter((_, idx) => this.#selectedShapeIdx!.has(idx))
-                .map(x => x.modelMatrix);
-
+        switch(this.#selectedObject) {
+            case "object":
+                return [this.shapes[this.#selectedShapeIdx!].modelMatrix];
+            case "world":
+                return [this.camera.viewMatrix];
+            case "light":
+                return [this.light.modelMatrix];
         }
-
-        return [this.camera.viewMatrix];
     }
 
     draw(gl: WebGLRenderingContext,
         positionAttributeLocation: number,
         normalAttributeLocation: number,
+        colorAttributeLocation: number,
         projectionULocation: WebGLUniformLocation | null,
         modelULocation: WebGLUniformLocation | null,
-        lightViewSpacePositionLocation: WebGLUniformLocation | null,
+        lightPositionULocation: WebGLUniformLocation | null,
         normalULocation: WebGLUniformLocation | null,
-        eyeULocation: WebGLUniformLocation | null
     ) {
         gl.uniformMatrix4fv(projectionULocation, false, this.#projectionMatrix);
-        gl.uniform3fv(lightViewSpacePositionLocation, new Float32Array([0, 10, 0]));
-        gl.uniform3fv(eyeULocation, new Float32Array(this.camera.eye)); // Since we do not move camera, we can use its original position
+
+        let lightPos = vec4.create();
+        vec4.add(lightPos, lightPos, [0, 10, 0, 0]); // Our starting light position
+        vec4.transformMat4(lightPos, lightPos, this.light.modelMatrix); // Light position in the world CS
+        gl.uniform4fv(lightPositionULocation, lightPos);
 
         this.shapes.forEach((shape, idx) => {
             shape.draw(gl,
                 positionAttributeLocation,
                 normalAttributeLocation,
+                colorAttributeLocation,
                 modelULocation,
-                lightViewSpacePositionLocation,
+                lightPositionULocation,
                 normalULocation);
 
-            if (this.#selectedShapeIdx?.has(idx))
+            if (this.#selectedShapeIdx === idx)
                 shape.drawAxis(gl, positionAttributeLocation, normalAttributeLocation); // Pass the color as normal
         });
     }
 }
+
+type SelectedObject =
+    | "object"
+    | "world"
+    | "light"
+

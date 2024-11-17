@@ -2,9 +2,29 @@ import { mat3, mat4 } from "gl-matrix";
 
 export class Shape {
     vertexArray: Float32Array;
-    indexArray: Uint16Array;
+    colorArray: Float32Array;
     normalsArray: Float32Array;
     modelMatrix: mat4;
+
+    #positionBuffer: WebGLBuffer;
+    #normalsBuffer: WebGLBuffer;
+    #colorBuffer: WebGLBuffer;
+
+    constructor(gl: WebGLRenderingContext,
+        vertexArray: number[],
+        colorArray: number[],
+        normalsArray: number[]) {
+
+        this.vertexArray = new Float32Array(vertexArray);
+        this.colorArray = new Float32Array(colorArray);
+        this.normalsArray = new Float32Array(normalsArray);
+
+        this.modelMatrix = mat4.create();
+
+        this.#positionBuffer = this.#bufferPositionData(gl);
+        this.#colorBuffer = this.#bufferColorData(gl);
+        this.#normalsBuffer = this.#bufferNormalsData(gl);
+    }
 
     get normalMatrix() {
         let nm = mat3.create();
@@ -12,37 +32,10 @@ export class Shape {
         return nm;
     }
 
-    #positionBuffer: WebGLBuffer;
-    // @ts-ignore
-    // Initially I used models with index buffers, but then decided not to
-    #positionIdxBuffer: WebGLBuffer = [];
-    #normalsBuffer: WebGLBuffer;
-
-    constructor(gl: WebGLRenderingContext,
-        vertexArray: number[],
-        indexArray: number[],
-        normalsArray: number[]) {
-
-        // If shape type is provided, then use my own verticies
-        this.vertexArray = new Float32Array(vertexArray);
-        this.indexArray = new Uint16Array(indexArray);
-
-        this.normalsArray = new Float32Array(normalsArray);
-
-        this.modelMatrix = mat4.create();
-
-        this.#positionBuffer = this.#bufferPositionData(gl);
-
-        if (this.indexArray.length != 0) {
-            this.#positionIdxBuffer = this.#bufferIdxData(gl);
-        }
-
-        this.#normalsBuffer = this.#bufferNormalsData(gl);
-    }
-
     draw(gl: WebGLRenderingContext,
         positionAttributeLocation: number,
         normalAttributeLocation: number,
+        colorAttributeLocation: number,
         modelUniformLocation: WebGLUniformLocation | null,
         lightViewSpacePositionLocation: WebGLUniformLocation | null,
         normalULocation: WebGLUniformLocation | null) {
@@ -54,6 +47,10 @@ export class Shape {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.#positionBuffer);
         gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(positionAttributeLocation);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.#colorBuffer);
+        gl.vertexAttribPointer(colorAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(colorAttributeLocation);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.#normalsBuffer);
         gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, 0, 0);
@@ -118,11 +115,11 @@ export class Shape {
         return positionBuffer;
     }
 
-    #bufferIdxData(gl: WebGLRenderingContext): WebGLBuffer {
-        let positionIdxBuffer = gl.createBuffer()!;
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, positionIdxBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexArray.length, gl.STATIC_DRAW);
-        return positionIdxBuffer;
+    #bufferColorData(gl: WebGLRenderingContext): WebGLBuffer {
+        let colorBuffer: WebGLBuffer = gl.createBuffer()!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.colorArray, gl.STATIC_DRAW);
+        return colorBuffer;
     }
 
     #bufferNormalsData(gl: WebGLRenderingContext): WebGLBuffer {

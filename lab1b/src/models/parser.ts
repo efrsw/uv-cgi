@@ -4,6 +4,7 @@ export class Parser {
     #paths = [
         // "/src/public/bunny.obj",
         // "/src/public/cube.obj",
+        "/src/public/sphere.obj",
         "/src/public/teapot.obj",
         "/src/public/sphere.obj",
         // "/src/public/tetrahedron.obj"
