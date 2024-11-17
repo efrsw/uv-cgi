@@ -1,11 +1,12 @@
 import { glMatrix, mat4 } from "gl-matrix";
-import { createProgram, createShader, resizeCanvasToDisplaySize } from "./helpers";
+import { resizeCanvasToDisplaySize } from "./helpers";
 import { Shape } from "./models/Shape";
 import { Position } from "./models/Position";
 import { Scene } from "./models/Scene";
 import { Parser } from "./models/Parser";
+import { Renderer } from "./models/Renderer";
 
-function handleKeyboardKeys(scene: Scene) {
+function handleKeyboardKeys(scene: Scene, renderer: Renderer) {
     globalThis.onkeydown = e => {
         switch (e.key) {
             case "1":
@@ -80,6 +81,18 @@ function handleKeyboardKeys(scene: Scene) {
             case "C":
                 scene.selectedShapeMatricies.forEach(m => mat4.scale(m, m, [1, 1, 1.1]));
                 break;
+            case 'w':
+                renderer.currentScheme = "g_diff";
+                break;
+            case 'e':
+                renderer.currentScheme = "g_spec";
+                break;
+            case 'r':
+                renderer.currentScheme = "p_diff";
+                break;
+            case 't':
+                renderer.currentScheme = "p_spec";
+                break;
         }
     };
 }
@@ -124,21 +137,16 @@ async function main() {
     let canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
     let gl = canvas.getContext('webgl') as WebGLRenderingContext;
 
-    let [vertexShaderSource, fragmentShaderSource] = await Promise.all([
-        fetch("/src/shaders/phong/phong_vertex_specular.glsl").then(x => x.text()),
-        fetch("/src/shaders/phong/phong_fragment_specular.glsl").then(x => x.text())]);
-
-    let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-
     let parser = new Parser();
-    let objects = await parser.parseFiles();
     let scene = new Scene([]);
+    let renderer = new Renderer(gl);
+    await renderer.initializeShaderPrograms();
+    let objects = await parser.parseFiles();
 
     objects.forEach(o => {
         let defaultColors = Array.from(Array(o.vertexArray.length), _ => [0.0, 1.0, 0.0])
             .flat(1);
-        scene.shapes.push(new Shape(gl, o.vertexArray, defaultColors, o.normalsArray));
+        scene.shapes.push(new Shape(renderer.gl, o.vertexArray, defaultColors, o.normalsArray));
     });
 
     // Move shapes to their initial positions
@@ -150,9 +158,11 @@ async function main() {
                 break;
             case 1:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [0, 3, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [6, 6, 6])
                 break;
             case 2:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [3, 3, 0])
+                mat4.scale(s.modelMatrix, s.modelMatrix, [6, 6, 6])
                 break;
             case 3:
                 mat4.translate(s.modelMatrix, s.modelMatrix, [-3, 0, 0])
@@ -180,57 +190,36 @@ async function main() {
         }
     });
 
-    if (vertexShader === undefined || fragmentShader === undefined) {
-        console.log("Problem with shaders");
-        return;
-    }
-
-    let program = createProgram(gl, vertexShader, fragmentShader);
-
-    if (program == undefined) {
-        console.log("Problem with program");
-        return;
-    }
-
-    // Initialization
-    let modelULocation = gl.getUniformLocation(program, "u_model");
-    let viewULocation = gl.getUniformLocation(program, "u_view");
-    let projectionULocation = gl.getUniformLocation(program, "u_projection");
-    let lightPositionULocation = gl.getUniformLocation(program, "u_light");
-    let normalULocation = gl.getUniformLocation(program, "u_normal");
-
-    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-    let normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
-    let colorAttributeLocation = gl.getAttribLocation(program, "a_color");
-
     // Set up callbacks
-    handleKeyboardKeys(scene);
+    handleKeyboardKeys(scene, renderer);
     handleMouseInput(canvas, scene);
 
     // Rendering
     const draw = () => {
         resizeCanvasToDisplaySize(canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        renderer.gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-        gl.clearColor(141.0 / 255, 153.0 / 255, 174.0 / 255, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        renderer.gl.clearColor(141.0 / 255, 153.0 / 255, 174.0 / 255, 1.0);
+        renderer.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.BACK);
+        renderer.gl.enable(gl.DEPTH_TEST);
+        renderer.gl.enable(gl.CULL_FACE);
+        renderer.gl.cullFace(gl.BACK);
 
-        gl.useProgram(program);
+        let program = renderer.shadingSchemes.get(renderer.currentScheme)!;
 
-        gl.uniformMatrix4fv(viewULocation, false, scene.camera.viewMatrix);
+        renderer.gl.useProgram(program.program);
 
-        scene.draw(gl,
-            positionAttributeLocation,
-            normalAttributeLocation,
-            colorAttributeLocation,
-            projectionULocation,
-            modelULocation,
-            lightPositionULocation,
-            normalULocation
+        renderer.gl.uniformMatrix4fv(program.attributes.viewULocation, false, scene.camera.viewMatrix);
+
+        scene.draw(renderer.gl,
+            program.attributes.positionAttributeLocation,
+            program.attributes.normalAttributeLocation,
+            program.attributes.colorAttributeLocation,
+            program.attributes.projectionULocation,
+            program.attributes.modelULocation,
+            program.attributes.lightPositionULocation,
+            program.attributes.normalULocation
         );
 
         window.requestAnimationFrame(draw);
@@ -240,3 +229,4 @@ async function main() {
 }
 
 await main();
+
