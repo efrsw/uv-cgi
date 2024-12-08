@@ -10,29 +10,29 @@ function handleKeyboardKeys(s: Scene) {
             case "ArrowDown":
                 s.pacman.upperPart.translate([0, 0, 0.2]);
                 s.pacman.lowerPart.translate([0, 0, 0.2]);
-                s.pacman.upperPart.currentRotation.y = 90;
-                s.pacman.lowerPart.currentRotation.y = 90;
+                // s.pacman.upperPart.currentRotation.y = 90;
+                // s.pacman.lowerPart.currentRotation.y = 90;
                 mat4.translate(s.camera.viewMatrix, s.camera.viewMatrix, [0, 0, -0.2]);
                 break;
             case "ArrowUp":
                 s.pacman.upperPart.translate([0, 0, -0.2]);
                 s.pacman.lowerPart.translate([0, 0, -0.2]);
-                s.pacman.upperPart.currentRotation.y = 270;
-                s.pacman.lowerPart.currentRotation.y = 270;
+                // s.pacman.upperPart.currentRotation.y = 270;
+                // s.pacman.lowerPart.currentRotation.y = 270;
                 mat4.translate(s.camera.viewMatrix, s.camera.viewMatrix, [0, 0, 0.2]);
                 break;
             case "ArrowLeft":
                 s.pacman.upperPart.translate([-0.2, 0, 0]);
                 s.pacman.lowerPart.translate([-0.2, 0, 0]);
-                s.pacman.upperPart.currentRotation.y = 360;
-                s.pacman.lowerPart.currentRotation.y = 360;
+                // s.pacman.upperPart.currentRotation.y = 360;
+                // s.pacman.lowerPart.currentRotation.y = 360;
                 mat4.translate(s.camera.viewMatrix, s.camera.viewMatrix, [0.2, 0, 0]);
                 break;
             case "ArrowRight":
                 s.pacman.upperPart.translate([0.2, 0, 0]);
                 s.pacman.lowerPart.translate([0.2, 0, 0]);
-                s.pacman.upperPart.currentRotation.y = 180;
-                s.pacman.lowerPart.currentRotation.y = 180;
+                // s.pacman.upperPart.currentRotation.y = 180;
+                // s.pacman.lowerPart.currentRotation.y = 180;
                 mat4.translate(s.camera.viewMatrix, s.camera.viewMatrix, [-0.2, 0, 0]);
                 break;
             case "v":

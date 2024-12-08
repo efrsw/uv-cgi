@@ -95,7 +95,8 @@ export class Scene {
                 colorAttributeLocation,
                 modelULocation,
                 normalULocation);
-            shape.drawAxis(gl, positionAttributeLocation, colorAttributeLocation);
+
+            //shape.drawAxis(gl, positionAttributeLocation, colorAttributeLocation);
         });
     }
 }
