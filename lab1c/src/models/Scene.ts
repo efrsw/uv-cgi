@@ -49,7 +49,7 @@ export class Scene {
 
         // Setup shear matrix
         let shear = mat4.create();
-        shear[1] = 0.1; // Sh(x)
+        shear[4] = 0.15; // Sh(y)
         shear[2] = 0.15; // Sh(z)
         shear[6] = 0.15; // Sh(z)
         mat4.multiply(this.#shearedMatrix, this.#shearedMatrix, shear);

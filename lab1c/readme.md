@@ -9,28 +9,36 @@ npm run dev
 
 ### Claim
 
-- [v] T1: Fully implemented.  
-- [v] T2: Fully implemented. For some reason, specular component gets "duplicated" on the other side of the object 
-    (better seen on the sphere models). Also, when whole scene is rotated, a light "belt" can be seen on sphere surface.
-- [v] T3: Fully implemented.
-- [v] T4: Fully implemented. Same problems as with T2.
-- [v] T5: Fully implemented.
-    - [v] a.
-    - [v] b. I am not sure if I've correctly implemented light transformations. The assignment says, that we should 
-        move light source in respect to global CS, hence I have applied all transformations to the light's model matrix.
-        However, when I translate the whole scene (using view matrix), the light source also gets translated.
+#### Foundations
 
-        Additionally, there is a strange behaviour with the rotation around y-axis: it doesn't produce noticable visual
-        effects like its x and z axis counterparts.
+- [v] T1 Labyrinth - fully implemented
+- [v] T2 Animations - partially implemented
+    - [v] T2.1 Open/close of the mouth - implemented
+    - [x] T2.2 Dynamically moved eyes - not implemented
+    - [x] T2.3 Smooth rotation in the direction of movement - not implemented
+        - Current realisation of translation apparently rotates pacman in its local coordinate system, which is not
+        visible during the actual game
+
+#### Graphical aspects
+
+- [v] T1 Shear view - fully implemented
+- [x] T2 Shadows - not implemented
+
+#### Gaming aspects
+
+- [x] T1 Continuous movement - not implemented
+- [v] T2 Centered camera - implemented
+- [x] T3 Collision detection - not implemented
+- [x] T4 Dots to eat - not implemented
+- [x] T5 Jumping - not implemented
+- [x] T6 Enemies - not implemented
 
 ### Tested environment
 
 - Fedora Linux 41 (dev + test)
-- Firefox 132.0.1 (64-bit)
+- Chrome 131.0.6778.85 (64-bit)
 
 ### Additional and general remarks
 
-- Initial light position is hardcoded in the shaders.
-- In order to simplify selection logic, respective shaders have unified interfaces.
-- I didn't come up with the way, to shade axis separately.
+- Labyrinth was created in Blender using the plugin.
 

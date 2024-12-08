@@ -51,7 +51,7 @@ async function main() {
     let renderer = new Renderer(gl);
 
     let maze = await parser.parseFile("/src/public/maze.obj", [0.5, 0.5, 0.5], gl);
-    let upperHemisphere = await parser.parseFile("/src/public/half-sphere.obj", [1.0, 0.0, 0], gl);
+    let upperHemisphere = await parser.parseFile("/src/public/half-sphere.obj", [1.0, 1.0, 0], gl);
     let lowerHemisphere = await parser.parseFile("/src/public/half-sphere.obj", [1.0, 1.0, 0], gl);
     let scene = new Scene(maze, {
         upperPart: upperHemisphere,
