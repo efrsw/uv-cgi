@@ -1,0 +1,18 @@
+body {
+    overflow: hidden;
+}
+
+#text {
+    font-style: italic;
+}
+
+#container {
+    display: flex;
+    justify-content: center;
+}
+
+#game-canvas {
+    background-color: rgb(162, 146, 163);
+    width: 800px;
+    height: 800px;
+}
