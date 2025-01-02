@@ -22,3 +22,51 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# CMake build artifacts
+build/
+build-*/
+cmake-*/
+.cache/
+
+# Generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled object files and libraries
+*.o
+*.obj
+*.so
+*.so.*
+*.dylib
+*.dll
+*.lib
+*.a
+*.lo
+
+# Executable files
+*.exe
+*.out
+
+# IDE specific files
+.idea/
+.vscode/
+*.code-workspace
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# Coverage and debug
+*.gcda
+*.gcno
+*.gcov
+
+# Others
+tags
+

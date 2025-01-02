@@ -1,3 +1,4 @@
+#include "color.h"
 #include "rtweekend.h"
 
 #include "hittable.h"
@@ -5,6 +6,7 @@
 #include "sphere.h"
 #include "vec3.h"
 #include <cmath>
+#include <iostream>
 #include <memory>
 
 color ray_color(const ray &r, const hittable &world) {

@@ -1,3 +1,0 @@
-/home/ef/Documents/univie/uv-cgi/rt-tutorial/cmake-build-debug/CMakeFiles/rt_tutorial.dir
-/home/ef/Documents/univie/uv-cgi/rt-tutorial/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/ef/Documents/univie/uv-cgi/rt-tutorial/cmake-build-debug/CMakeFiles/rebuild_cache.dir
