@@ -1,8 +1,8 @@
-namespace RayTracer.Lib;
+namespace RayTracer.App.IO;
 
 public static class ArgumentParser
 {
-	private const string ARGUMENT_PREFIX = "--";
+	private const string ArgumentPrefix = "--";
 
 	public static Dictionary<string, string> ParseArguments(string[] args)
 	{
@@ -10,7 +10,7 @@ public static class ArgumentParser
 
 		for (int i = 0; i < args.Length - 1; i++)
 		{
-			if (args[i].StartsWith(ARGUMENT_PREFIX))
+			if (args[i].StartsWith(ArgumentPrefix))
 			{
 				res.TryAdd(args[i], args[i + 1]);
 			}

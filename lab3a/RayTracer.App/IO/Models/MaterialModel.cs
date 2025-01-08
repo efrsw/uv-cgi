@@ -1,6 +1,6 @@
 using RayTracer.Lib.Math;
 
-namespace RayTracer.Lib.Models;
+namespace RayTracer.App.IO.Models;
 
 public abstract record MaterialModel(PhongModel PhongModel, double Reflectance, double Transmittance, double Refraction)
 {

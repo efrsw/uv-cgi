@@ -1,9 +1,9 @@
 ﻿using System.Xml.Linq;
 
+using RayTracer.App.IO.Models;
 using RayTracer.Lib.Math;
-using RayTracer.Lib.Models;
 
-namespace RayTracer.Lib;
+namespace RayTracer.App.IO;
 
 public class SceneParser
 {
@@ -38,31 +38,39 @@ public class SceneParser
 	/// <summary>
 	/// Parses all information related to meshes/geometry of the scene
 	/// </summary>
-	private List<SphereModel> ParseMeshes()
+	private List<SurfaceModel> ParseMeshes()
 	{
 		XElement surfacesEl = SceneXml.Descendants("surfaces").First();
-		List<SphereModel> surfaces = new();
+		List<SurfaceModel> surfaces = [];
 
 		foreach (XElement surface in surfacesEl.Elements())
 		{
-			// Parse radius
-			double radius = double.TryParse(surface.Attribute("radius")?.Value, out double rad) ? rad : 123;
-
-			// Parse surface position
-			XElement sPositionEl = surface.Descendants("position").First();
-			(double x, double y, double z) sPositionData = ExtractTripletFromNode(sPositionEl, TripletType.Position);
-			Point3 sPosition = new(sPositionData.x, sPositionData.y, sPositionData.z);
-
 			// Parse surface material
 			XElement? sMaterialEl = surface.Descendants("material_solid").FirstOrDefault()
 			                        ?? surface.Descendants("material_textured").FirstOrDefault();
 			MaterialModel material = ParseMaterial(sMaterialEl);
 
 			// Parse surface transforms
-			XElement? transformsEl = surface.Descendants("transforms").FirstOrDefault();
+			XElement? transformsEl = surface.Descendants("transform").FirstOrDefault();
 			List<TransformModel> transforms = ParseTransforms(transformsEl);
 
-			surfaces.Add(new SphereModel(radius, sPosition, material, transforms));
+			// Parse sphere specific data
+			if (surface.Name.ToString() == "sphere")
+			{
+				// Parse radius
+				double radius = double.TryParse(surface.Attribute("radius")?.Value, out double rad) ? rad : 123;
+
+				// Parse surface position
+				XElement sPositionEl = surface.Descendants("position").First();
+				(double x, double y, double z)
+					sPositionData = ExtractTripletFromNode(sPositionEl, TripletType.Position);
+				Point3 sPosition = new(sPositionData.x, sPositionData.y, sPositionData.z);
+				surfaces.Add(new SurfaceModel.Sphere(radius, sPosition, material, transforms));
+			}
+			else
+			{
+				surfaces.Add(new SurfaceModel.Mesh(material, transforms));
+			}
 		}
 
 		return surfaces;
@@ -116,7 +124,7 @@ public class SceneParser
 	/// <returns></returns>
 	private static List<TransformModel> ParseTransforms(XElement? transformsEl)
 	{
-		List<TransformModel> transformModels = new();
+		List<TransformModel> transformModels = [];
 		if (transformsEl is null)
 		{
 			return transformModels;
@@ -158,7 +166,7 @@ public class SceneParser
 	private List<LightModel> ParseLights()
 	{
 		XElement lightsEl = SceneXml.Descendants("lights").First();
-		List<LightModel> lights = new();
+		List<LightModel> lights = [];
 
 		foreach (XElement light in lightsEl.Elements())
 		{

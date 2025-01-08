@@ -1,6 +1,6 @@
 using RayTracer.Lib.Math;
 
-namespace RayTracer.Lib.Models;
+namespace RayTracer.App.IO.Models;
 
 public record CameraModel(
 	Point3 Position,
