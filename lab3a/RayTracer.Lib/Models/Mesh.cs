@@ -13,4 +13,6 @@ public class Mesh : ISurface
 		_material = material;
 		_transformations = transformations;
 	}
+
+	public HitModel IsHit(Ray r) => new HitModel(false);
 }
