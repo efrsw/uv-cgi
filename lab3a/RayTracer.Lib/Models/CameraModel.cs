@@ -2,9 +2,10 @@ using RayTracer.Lib.Math;
 
 namespace RayTracer.Lib.Models;
 
-public record CameraModel(Point3 Position,
-    Point3 LookAt,
-    Vec3 Up,
-    int HorizontalFov,
-    (int h, int w) Resolution,
-    int MaxBounces);
+public record CameraModel(
+	Point3 Position,
+	Point3 LookAt,
+	Vec3 Up,
+	int HorizontalFov,
+	(int h, int w) Resolution,
+	int MaxBounces);

@@ -6,49 +6,55 @@ namespace RayTracer.Lib.Models;
 
 public record SceneModel(Col3 BackgroundColor, string OutputFile)
 {
-  public CameraModel? Camera { get; init; }
-  public List<LightModel> Lights { get; init; } = [];
-  public List<SphereModel> Surfaces { get; init; } = [];
+	public CameraModel? Camera { get; init; }
+	public List<LightModel> Lights { get; init; } = [];
+	public List<SphereModel> Surfaces { get; init; } = [];
 
-  public override string ToString()
-  {
-    var sb = new StringBuilder();
+	public override string ToString()
+	{
+		StringBuilder sb = new();
 
-    sb.Append($"Output -- {OutputFile}\n");
-    sb.Append($"BackgroundColor -- {BackgroundColor}\n");
-    sb.Append($"""
-              Camera:
-                Position -- {Camera?.Position}
-                LookAt -- {Camera?.LookAt}
-                Up -- {Camera?.Up}
-                HorizontalFov -- {Camera?.HorizontalFov}
-                Resolution -- h:{Camera?.Resolution.h} w:{Camera?.Resolution.w}
-                MaxBounces -- {Camera?.MaxBounces}
+		sb.Append($"Output -- {OutputFile}\n");
+		sb.Append($"BackgroundColor -- {BackgroundColor}\n");
+		sb.Append($"""
+		           Camera:
+		             Position -- {Camera?.Position}
+		             LookAt -- {Camera?.LookAt}
+		             Up -- {Camera?.Up}
+		             HorizontalFov -- {Camera?.HorizontalFov}
+		             Resolution -- h:{Camera?.Resolution.h} w:{Camera?.Resolution.w}
+		             MaxBounces -- {Camera?.MaxBounces}
 
-              """);
+		           """);
 
-    sb.Append("Lights:\n");
-    foreach(var l in Lights) sb.Append($"  {l}\n");
+		sb.Append("Lights:\n");
+		foreach (LightModel l in Lights)
+		{
+			sb.Append($"  {l}\n");
+		}
 
-    sb.Append("Surfaces:\n");
-    foreach(var s in Surfaces)
-    {
-      sb.Append($"  Radius -- {s.Radius}\n");
-      sb.Append($"  Position -- {s.Position}\n");
-      sb.Append($"  Material -- {s.Material}\n");
+		sb.Append("Surfaces:\n");
+		foreach (SphereModel s in Surfaces)
+		{
+			sb.Append($"  Radius -- {s.Radius}\n");
+			sb.Append($"  Position -- {s.Position}\n");
+			sb.Append($"  Material -- {s.Material}\n");
 
-      if(s.Transforms.Count == 0) continue;
+			if (s.Transforms.Count == 0)
+			{
+				continue;
+			}
 
-      sb.Append("  Transforms:\n");
+			sb.Append("  Transforms:\n");
 
-      foreach(var t in s.Transforms)
-      {
-        sb.Append($"    {t}\n");
-      }
-    }
+			foreach (TransformModel t in s.Transforms)
+			{
+				sb.Append($"    {t}\n");
+			}
+		}
 
-    sb.AppendLine();
+		sb.AppendLine();
 
-    return sb.ToString();
-  }
+		return sb.ToString();
+	}
 }

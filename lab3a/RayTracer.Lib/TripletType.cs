@@ -1,7 +1,7 @@
 namespace RayTracer.Lib;
 
-enum TripletType
+internal enum TripletType
 {
-  Color,
-  Position
+	Color,
+	Position
 }

@@ -1,17 +1,18 @@
 ﻿using RayTracer.Lib;
+using RayTracer.Lib.Models;
 
 namespace RayTracer.App;
 
-static class Program
+internal static class Program
 {
-  public static int Main(string[] args)
-  {
-    var argsDict = ArgumentParser.ParseArguments(args);
+	public static int Main(string[] args)
+	{
+		Dictionary<string, string> argsDict = ArgumentParser.ParseArguments(args);
 
-    var p = new SceneParser(argsDict.GetValueOrDefault("--scene-path", ""));
-    var scene = p.ConstructScene();
-    Console.WriteLine(scene.ToString());
+		SceneParser p = new(argsDict.GetValueOrDefault("--scene-path", ""));
+		SceneModel scene = p.ConstructScene();
+		Console.WriteLine(scene.ToString());
 
-    return 0;
-  }
+		return 0;
+	}
 }
