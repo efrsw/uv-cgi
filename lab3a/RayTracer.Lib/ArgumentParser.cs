@@ -1,6 +1,6 @@
 namespace RayTracer.Lib;
 
-public class ArgumentParser
+public static class ArgumentParser
 {
   private const string ARGUMENT_PREFIX = "--";
 

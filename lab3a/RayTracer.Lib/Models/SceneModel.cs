@@ -22,15 +22,15 @@ public record SceneModel(Col3 BackgroundColor, string OutputFile)
                 LookAt -- {Camera?.LookAt}
                 Up -- {Camera?.Up}
                 HorizontalFov -- {Camera?.HorizontalFov}
-                Resolution -- h:{Camera?.Resolution.h} w{Camera?.Resolution.w}
+                Resolution -- h:{Camera?.Resolution.h} w:{Camera?.Resolution.w}
                 MaxBounces -- {Camera?.MaxBounces}
 
               """);
 
-    sb.Append($"Lights:\n");
+    sb.Append("Lights:\n");
     foreach(var l in Lights) sb.Append($"  {l}\n");
 
-    sb.Append($"Surfaces:\n");
+    sb.Append("Surfaces:\n");
     foreach(var s in Surfaces)
     {
       sb.Append($"  Radius -- {s.Radius}\n");
@@ -39,7 +39,7 @@ public record SceneModel(Col3 BackgroundColor, string OutputFile)
 
       if(s.Transforms.Count == 0) continue;
 
-      sb.Append($"  Transforms:\n");
+      sb.Append("  Transforms:\n");
 
       foreach(var t in s.Transforms)
       {

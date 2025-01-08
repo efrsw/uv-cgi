@@ -7,7 +7,12 @@ public abstract record MaterialModel(PhongModel PhongModel, double Reflectance, 
   public record Solid(Col3 Color, PhongModel PhongModel, double Reflectance, double Transmittance, double Refraction)
     : MaterialModel(PhongModel, Reflectance, Transmittance, Refraction);
 
-  public record Textured(string Texture, PhongModel PhongModel, double Reflectance, double Transmittance, double Refraction)
+  public record Textured(
+    string Texture,
+    PhongModel PhongModel,
+    double Reflectance,
+    double Transmittance,
+    double Refraction)
     : MaterialModel(PhongModel, Reflectance, Transmittance, Refraction);
 }
 
