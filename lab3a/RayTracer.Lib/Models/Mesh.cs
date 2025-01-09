@@ -13,5 +13,5 @@ public class Mesh : ISurface
 		_transformations = transformations;
 	}
 
-	public bool IsHit(Ray r, HitModel intersectionPoint) => false;
+	public HitModel IsHit(Ray r) => new HitModel.Empty();
 }

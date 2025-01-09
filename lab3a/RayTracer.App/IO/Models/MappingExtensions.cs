@@ -21,6 +21,15 @@ public static class MappingExtensions
 			_ => throw new ArgumentOutOfRangeException(nameof(model), "Error mapping MaterialMode to Material"),
 		};
 
+	public static Light FromModel(this LightModel model)
+		=> model switch
+		{
+			LightModel.Ambient => new Light.Ambient(model.Color),
+			LightModel.Parallel => new Light.Parallel(model.Color),
+			LightModel.Point => new Light.Point(model.Color),
+			_ => throw new ArgumentOutOfRangeException(nameof(model))
+		};
+
 	private static Material FromModel(this MaterialModel model)
 		=> model switch
 		{

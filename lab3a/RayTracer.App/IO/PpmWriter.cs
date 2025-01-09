@@ -26,9 +26,9 @@ public class PpmWriter
 		await sw.WriteLineAsync("255");
 
 		// Moving in the opposite order
-		for (var j = h - 1; j >= 0; j--)
+		for (var j = 0; j < h; j++)
 		{
-			for (var i = w - 1; i >= 0; i--)
+			for (var i = 0; i < w; i++)
 			{
 				var c = viewport[i, j];
 				await sw.WriteLineAsync(

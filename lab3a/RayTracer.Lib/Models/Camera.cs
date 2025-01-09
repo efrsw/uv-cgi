@@ -24,7 +24,7 @@ public class Camera
 		_maxBounces = maxBounces;
 	}
 
-	public Col3[,] Render(List<ISurface> spheres)
+	public Col3[,] Render(List<ISurface> spheres, List<Light> lights, Col3 bgColor)
 	{
 		var viewport = new Col3[_width, _height];
 
@@ -58,7 +58,7 @@ public class Camera
 				var viewportPos = viewportOrigin + (dw * i) + (dh * j);
 				var rayDir = _position - viewportPos;
 				var r = new Ray(_position, rayDir);
-				viewport[i, j] = RayColor(r, spheres);
+				viewport[i, j] = RayColor(r, spheres, lights, bgColor);
 			}
 		}
 
@@ -66,19 +66,22 @@ public class Camera
 		return viewport;
 	}
 
-	private Col3 RayColor(Ray p, List<ISurface> surfaces)
+	private Col3 RayColor(Ray p, List<ISurface> surfaces, List<Light> lights, Col3 bgColor)
 	{
-		var closestPoint = new HitModel();
+		var intersectionPoint = surfaces
+			.Select(s => s.IsHit(p)) // Get all intersection points for a ray
+			.Where(x => x is HitModel.Hit) // Select only that hit
+			.Cast<HitModel.Hit>()
+			.OrderBy(x => x.T) // Sort them by the closest point
+			.FirstOrDefault(); // Take the closest or null
 
-		foreach (var s in surfaces)
-		{
-			var intersectionTest = s.IsHit(p, closestPoint);
+		if (intersectionPoint is null) return bgColor;
 
-			// TODO: Figure out intersection logic
+		var color = intersectionPoint.Material.Color ?? new Col3(0, 0, 0);
 
-			return new Col3(0, 0, 0);
-		}
-
-		return new Col3(0, 0, 0);
+		return lights.Aggregate(color, (current, l) => current + l.C * intersectionPoint.Material.Ka)
+			.ToVector()
+			.ToUnit()
+			.ToColor();
 	}
 }

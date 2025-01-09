@@ -2,7 +2,7 @@
 <!DOCTYPE scene SYSTEM "scene.dtd">
 
 <scene output_file="example1.png">
-    <background_color r="1.0" g="0.0" b="0.0"/>
+    <background_color r="0.0" g="0.0" b="0.0"/>
     <camera>
         <position x="0.0" y="0.0" z="1.0"/>
         <lookat x="0.0" y="0.0" z="-2.5"/>

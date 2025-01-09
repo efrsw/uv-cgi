@@ -2,10 +2,9 @@ using RayTracer.Lib.Math;
 
 namespace RayTracer.Lib.Models;
 
-public class HitModel
+public abstract record HitModel
 {
-	public Point3 IntersectionPoint { get; set; }
-	public Vec3 UnitNormal { get; set; }
-	public Material IntersectionMaterial { get; set; }
-	public double IntersectionT { get; set; }
+	public record Empty : HitModel;
+
+	public record Hit(Vec3 HitNormal, double T, Material Material) : HitModel;
 };

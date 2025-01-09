@@ -18,7 +18,7 @@ public class Sphere : ISurface
 		_transformations = transformations;
 	}
 
-	public bool IsHit(Ray r, HitModel intersectionPoint)
+	public HitModel IsHit(Ray r)
 	{
 		var oc = _center - r.Start;
 		var a = r.Direction.Dot(r.Direction);
@@ -26,22 +26,13 @@ public class Sphere : ISurface
 		var c = oc.Dot(oc) - _radius * _radius;
 		var d = b * b - 4 * a * c;
 
-		if (d < 0) return false;
+		if (d < 0) return new HitModel.Empty();
 
-		var t_near = (-b - System.Math.Sqrt(d)) / (2.0 * a);
-		// var t_far = (-b + System.Math.Sqrt(d)) / (2.0 * a);
+		var tNear = (-b - System.Math.Sqrt(d)) / (2.0 * a);
 
-		// TODO: Handle the far intersection point
-		if (t_near > intersectionPoint.IntersectionT) return false;
-
-		var intPoint = r.At(t_near);
+		var intPoint = r.At(tNear);
 		var normal = (intPoint - _center) / _radius;
 
-		intersectionPoint.IntersectionMaterial = _material;
-		intersectionPoint.IntersectionT = t_near;
-		intersectionPoint.UnitNormal = normal;
-		intersectionPoint.IntersectionPoint = intPoint;
-
-		return true;
+		return new HitModel.Hit(normal, tNear, _material);
 	}
 }

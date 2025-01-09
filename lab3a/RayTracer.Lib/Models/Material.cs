@@ -4,25 +4,31 @@ namespace RayTracer.Lib.Models;
 
 public class Material
 {
-	private double _reflectance;
-	private double _transmittance;
-	private double _refraction;
-	private double _ka;
-	private double _kd;
-	private double _ks;
-	private double _exp;
-
-	public Material(double reflectance, double transmittance, double refraction, 
+	public Material(double reflectance, double transmittance, double refraction,
 			double ka, double kd, double ks, double exp)
 	{
-		_reflectance = reflectance;
-		_transmittance = transmittance;
-		_refraction = refraction;
-		_ka = ka;
-		_kd = kd;
-		_ks = ks;
-		_exp = exp;	
+		Reflectance = reflectance;
+		Transmittance = transmittance;
+		Refraction = refraction;
+		Ka = ka;
+		Kd = kd;
+		Ks = ks;
+		Exp = exp;
 	}
+
+	public double Reflectance { get; set; }
+
+	public double Transmittance { get; set; }
+
+	public double Refraction { get; set; }
+
+	public double Ka { get; set; }
+
+	public double Kd { get; set; }
+
+	public double Ks { get; set; }
+
+	public double Exp { get; set; }
 
 	public Col3? Color { get; set; }
 	public string? Texture { get; set; }
