@@ -68,14 +68,15 @@ public class Camera
 
 	private Col3 RayColor(Ray p, List<ISurface> surfaces)
 	{
+		var closestPoint = new HitModel();
+
 		foreach (var s in surfaces)
 		{
-			var intersectionTest = s.IsHit(p);
+			var intersectionTest = s.IsHit(p, closestPoint);
 
-			if (intersectionTest.IsHit)
-			{
-				return new Col3(intersectionTest.UnitNormal.X + 1, intersectionTest.UnitNormal.Y + 1, intersectionTest.UnitNormal.Z + 1) / 0.5;
-			}
+			// TODO: Figure out intersection logic
+
+			return new Col3(0, 0, 0);
 		}
 
 		return new Col3(0, 0, 0);

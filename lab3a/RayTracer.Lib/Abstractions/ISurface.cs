@@ -4,5 +4,5 @@ namespace RayTracer.Lib.Abstractions;
 
 public interface ISurface
 {
-	public HitModel IsHit(Ray r);
+	public bool IsHit(Ray r, HitModel intersectionPoint);
 }

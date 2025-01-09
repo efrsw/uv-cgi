@@ -1,5 +1,4 @@
 using RayTracer.Lib.Abstractions;
-using RayTracer.Lib.Math;
 
 namespace RayTracer.Lib.Models;
 
@@ -14,5 +13,5 @@ public class Mesh : ISurface
 		_transformations = transformations;
 	}
 
-	public HitModel IsHit(Ray r) => new HitModel(false);
+	public bool IsHit(Ray r, HitModel intersectionPoint) => false;
 }
