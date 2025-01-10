@@ -18,7 +18,7 @@ public class Camera
 		_position = position;
 		_lookAt = lookAt;
 		_upVector = up;
-		_horizontalFov = (System.Math.PI / 180) * horizontalFov;
+		_horizontalFov = System.Math.PI / 180 * horizontalFov;
 		_width = width;
 		_height = height;
 		_maxBounces = maxBounces;
@@ -32,7 +32,7 @@ public class Camera
 		var focalLength = (_position - _lookAt).Length();
 
 		var viewportWidth = 2 * h * focalLength;
-		var viewportHeight = (Convert.ToDouble(_width) / _height) * viewportWidth;
+		var viewportHeight = Convert.ToDouble(_width) / _height * viewportWidth;
 
 		var cameraZ = (_position - _lookAt).ToUnit();
 		var cameraX = _upVector.Cross(cameraZ).ToUnit();
@@ -45,7 +45,7 @@ public class Camera
 		var dh = viewportHeightVector / _height;
 
 		var viewportCorner = _position - (cameraZ * focalLength) -
-		                     (viewportWidthVector + viewportHeightVector) * 0.5;
+							 (viewportWidthVector + viewportHeightVector) * 0.5;
 		var viewportOrigin = viewportCorner + (dw + dh) * 0.5;
 
 		Console.WriteLine("Render started");
@@ -78,6 +78,19 @@ public class Camera
 		if (intersectionPoint is null) return bgColor;
 
 		var color = intersectionPoint.Material.Color ?? new Col3(0, 0, 0);
+
+		// Ambient light
+		var ambientLight = lights
+			.FirstOrDefault(l => l is Light.Ambient)?.C ?? new Col3(0, 0, 0);
+		color += intersectionPoint.Material.Ka * ambientLight;
+
+		// Diffuse light
+		color += lights
+			.Where(l => l is Light.Parallel)
+			.Cast<Light.Parallel>()
+			.Aggregate(color, (cur, l) => cur + l.C * System.Math.Max(intersectionPoint.HitNormal.ToUnit().Dot(l.Direction), 0.0));
+
+		// Specular light
 
 		return lights.Aggregate(color, (current, l) => current + l.C * intersectionPoint.Material.Ka)
 			.ToVector()

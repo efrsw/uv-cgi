@@ -25,7 +25,7 @@ public static class MappingExtensions
 		=> model switch
 		{
 			LightModel.Ambient => new Light.Ambient(model.Color),
-			LightModel.Parallel => new Light.Parallel(model.Color),
+			LightModel.Parallel ml => new Light.Parallel(ml.Color, ml.Direction),
 			LightModel.Point => new Light.Point(model.Color),
 			_ => throw new ArgumentOutOfRangeException(nameof(model))
 		};

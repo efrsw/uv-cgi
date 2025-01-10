@@ -8,7 +8,7 @@ public abstract record Light(Col3 C)
 	{
 	}
 
-	public record Parallel(Col3 C) : Light(C)
+	public record Parallel(Col3 C, Vec3 Direction) : Light(C)
 	{
 	}
 
