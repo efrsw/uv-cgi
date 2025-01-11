@@ -32,7 +32,8 @@ Example usage:
     - Alternatively, it is possible to compile project ahead-of-time. 
         To do that use `dotnet publish -r linux-x64 -c Release`. It will produce one warning, which is fine.
         The binary will be somewhere in `/bin/Release/net8.0/.../native/RayTracer.App`
-6. If AOT compiled, binary could be used as a standalone binary like `./RayTracer.App`
+6. If AOT compiled, binary could be used as a standalone binary like `./RayTracer.App`.
+    - Obviously, it is possible to copy it under a better name like `cp RayTracer.App ~/Documents/rt`
 
 ### Claim
 
