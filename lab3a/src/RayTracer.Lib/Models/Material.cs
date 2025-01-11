@@ -31,5 +31,6 @@ public class Material
 	public double Exp { get; set; }
 
 	public Col3? Color { get; set; }
+
 	public string? Texture { get; set; }
 }

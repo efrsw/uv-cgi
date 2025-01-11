@@ -5,8 +5,8 @@ namespace RayTracer.Lib.Models;
 
 public class Sphere : ISurface
 {
-	private double _radius;
-	private Point3 _center;
+	private readonly double _radius;
+	private readonly Point3 _center;
 	private Material _material;
 	private List<Transformation> _transformations;
 

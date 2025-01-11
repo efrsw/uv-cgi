@@ -5,9 +5,9 @@ namespace RayTracer.Lib.Models;
 
 public class Camera
 {
-	private Point3 _position;
-	private Point3 _lookAt;
-	private Vec3 _upVector;
+	private readonly Point3 _position;
+	private readonly Point3 _lookAt;
+	private readonly Vec3 _upVector;
 	private readonly double _horizontalFov;
 	private readonly int _maxBounces;
 	private readonly int _width;
@@ -55,7 +55,7 @@ public class Camera
 
 		for (var j = 0; j < _height; j++)
 		{
-			Console.WriteLine($"Line {j}/{_height}");
+			Console.Write($"\rLine {j + 1}/{_height}");
 			for (var i = 0; i < _width; i++)
 			{
 				var viewportPos = viewportOrigin + (dw * i) + (dh * j);
@@ -65,6 +65,7 @@ public class Camera
 			}
 		}
 
+		Console.WriteLine();
 		Console.WriteLine("Render finished");
 		return viewport;
 	}
@@ -72,7 +73,7 @@ public class Camera
 	/// <summary>
 	/// Function calculates the color of the ray
 	/// </summary>
-	private Col3 RayColor(Ray p, List<ISurface> surfaces, List<Light> lights, Col3 bgColor)
+	private static Col3 RayColor(Ray p, List<ISurface> surfaces, List<Light> lights, Col3 bgColor)
 	{
 		var intersectionP = p.IsIntersectedBy(surfaces, 0, double.MaxValue);
 
@@ -105,7 +106,6 @@ public class Camera
 				if (shadowIntersection is HitModel.Hit) return cur;
 
 				// Calcualte specular component from light source
-				var viewVec = (_lookAt - _position).ToUnit();
 				var lightVec = l.Direction.ToUnit();
 				var eyeVec = -p.Direction.ToUnit();
 				var reflectionVec = (-lightVec).Reflect(hm.HitNormalUnit).ToUnit();
