@@ -12,6 +12,10 @@ public static class MathExtensions
 
 	public static Vec3 ToUnit(this Vec3 v) => v / v.Length();
 
+	public static Col3 ToUnit(this Col3 c) => c / c.Length();
+
+	public static Vec3 Reflect(this Vec3 l, Vec3 normal) => 2 * normal.Dot(l) * normal - l;
+
 	public static Vec3 Cross(this Vec3 v, Vec3 u) => new(
 		v.Y * u.Z - v.Z * u.Y,
 		v.X * u.Z - v.Z * u.X,

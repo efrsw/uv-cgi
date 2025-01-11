@@ -25,14 +25,15 @@ public class PpmWriter
 		await sw.WriteLineAsync($"{w} {h}");
 		await sw.WriteLineAsync("255");
 
-		// Moving in the opposite order
-		for (var j = 0; j < h; j++)
+		for (var j = h - 1; j >= 0; j--)
 		{
 			for (var i = 0; i < w; i++)
 			{
 				var c = viewport[i, j];
-				await sw.WriteLineAsync(
-					$"{Convert.ToInt32(c.R * 255)} {Convert.ToInt32(c.G * 255)} {Convert.ToInt32(c.B * 255)}");
+				await sw.WriteAsync($"{Math.Min(Convert.ToInt32(c.R * 255), 255)} ");
+				await sw.WriteAsync($"{Math.Min(Convert.ToInt32(c.G * 255), 255)} ");
+				await sw.WriteAsync($"{Math.Min(Convert.ToInt32(c.B * 255), 255)}");
+				await sw.WriteLineAsync();
 			}
 		}
 

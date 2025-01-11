@@ -10,5 +10,5 @@ public record struct Vec3(double X, double Y, double Z)
 	public static Vec3 operator /(Vec3 v, int s) => new(v.X / s, v.Y / s, v.Z / s);
 	public static Vec3 operator /(Vec3 v, double s) => new(v.X / s, v.Y / s, v.Z / s);
 
-	public double Length() => System.Math.Sqrt(X * X + Y * Y + Z * Z);
+	public readonly double Length() => System.Math.Sqrt(X * X + Y * Y + Z * Z);
 }

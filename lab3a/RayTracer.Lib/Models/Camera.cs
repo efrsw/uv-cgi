@@ -45,7 +45,7 @@ public class Camera
 		var dh = viewportHeightVector / _height;
 
 		var viewportCorner = _position - (cameraZ * focalLength) -
-							 (viewportWidthVector + viewportHeightVector) * 0.5;
+		                     (viewportWidthVector + viewportHeightVector) * 0.5;
 		var viewportOrigin = viewportCorner + (dw + dh) * 0.5;
 
 		Console.WriteLine("Render started");
@@ -81,20 +81,39 @@ public class Camera
 
 		// Ambient light
 		var ambientLight = lights
-			.FirstOrDefault(l => l is Light.Ambient)?.C ?? new Col3(0, 0, 0);
-		color += intersectionPoint.Material.Ka * ambientLight;
+			.FirstOrDefault(l => l is Light.Ambient)!; // There is at least one ambient light in the scene
+		var ambientComponent = ambientLight.C * intersectionPoint.Material.Ka;
 
-		// Diffuse light
-		color += lights
+		var parallelLights = lights
 			.Where(l => l is Light.Parallel)
 			.Cast<Light.Parallel>()
-			.Aggregate(color, (cur, l) => cur + l.C * System.Math.Max(intersectionPoint.HitNormal.ToUnit().Dot(l.Direction), 0.0));
+			.ToList();
 
-		// Specular light
+		// Aggregated diffuse + specular light
+		var diffuseComponent = parallelLights.Aggregate(new Col3(0, 0, 0),
+			(cur, l) =>
+			{
+				// TODO: If light is in shadow, then do not add anything
+				
+				// Calcualte specular component from light source
+				var viewVec = (_lookAt - _position).ToUnit();
+				var lightVec = l.Direction.ToUnit();
+				var eyeVec = -p.Direction.ToUnit();
+				var reflectionVec = (-lightVec).Reflect(intersectionPoint.HitNormalUnit).ToUnit();
 
-		return lights.Aggregate(color, (current, l) => current + l.C * intersectionPoint.Material.Ka)
-			.ToVector()
-			.ToUnit()
-			.ToColor();
+				var specularIntensity = System.Math.Pow(System.Math.Max(eyeVec.Dot(reflectionVec), 0.0),
+					intersectionPoint.Material.Exp);
+				var specularColor = l.C * intersectionPoint.Material.Ks * specularIntensity;
+
+				// Calculate diffuse component from light source
+				var diffuseIntensity = System.Math.Max(intersectionPoint.HitNormalUnit.Dot(-lightVec), 0.0);
+				var diffuseColor = l.C * intersectionPoint.Material.Kd * diffuseIntensity;
+
+				return cur + specularColor + diffuseColor;
+			});
+
+		var pixelColor = color + ambientComponent + diffuseComponent;
+
+		return pixelColor;
 	}
 }
