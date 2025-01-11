@@ -18,7 +18,7 @@ internal static class Program
 							  -h: print this flag description.
 							  -s: absolute path to the rendered scene.
 							  -o: absolute path to directory for the output (with / at the end).
-							  -d: will print parsed scene to standrad output.
+							  -d: will print parsed scene to standard output.
 
 							  Example usage: 
 							  ./RayTracer.App -s "/home/ef/Documents/univie/uv-cgi/lab3a/src/Scenes/example3.xml" -o "/home/ef/Documents/univie/uv-cgi/lab3a/src/Output" -d
@@ -39,7 +39,7 @@ internal static class Program
 			[.. scene.Lights.Select(l => l.FromModel())],
 			scene.BackgroundColor) ?? new Col3[0, 0];
 
-		await w.WrtieViewport(viewport, scene.OutputFile);
+		await w.WriteViewport(viewport, scene.OutputFile);
 
 		return 0;
 	}

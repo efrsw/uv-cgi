@@ -11,7 +11,7 @@ public class PpmWriter
 		_rootDir = rootDir;
 	}
 
-	public async Task WrtieViewport(Col3[,] viewport, string fileName)
+	public async Task WriteViewport(Col3[,] viewport, string fileName)
 	{
 		(int w, int h) = (viewport.GetLength(0), viewport.GetLength(1));
 		var path = Path.Combine(Path.Combine(_rootDir, fileName));
