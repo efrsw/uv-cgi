@@ -1,6 +1,6 @@
 namespace RayTracer.Lib.Math;
 
-public static class MathExtensions
+public static class Vec3Extensions
 {
 	public static Vec3 ToUnit(this Vec3 v) => v / v.Length();
 
