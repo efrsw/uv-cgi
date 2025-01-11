@@ -10,7 +10,7 @@ internal static class Program
 	{
 		var argsDict = ArgumentParser.ParseArguments(args);
 
-		if(argsDict.TryGetValue("-h", out var _)) 
+		if(argsDict.TryGetValue("-h", out _))
 		{
 			Console.WriteLine("""
 							  Flags description. 
