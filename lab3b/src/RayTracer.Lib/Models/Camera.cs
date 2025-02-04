@@ -48,7 +48,7 @@ public class Camera
 		var dh = viewportHeightVector / _height;
 
 		var viewportCorner = _position - (cameraZ * focalLength) -
-							 (viewportWidthVector + viewportHeightVector) * 0.5;
+		                     (viewportWidthVector + viewportHeightVector) * 0.5;
 		var viewportOrigin = viewportCorner + (dw + dh) * 0.5;
 
 		Console.WriteLine("Render started");
@@ -76,53 +76,57 @@ public class Camera
 	private static Col3 RayColor(Ray p, List<ISurface> surfaces, List<Light> lights, Col3 bgColor)
 	{
 		var intersectionP = p.IsIntersectedBy(surfaces, 0, double.MaxValue);
-
 		if (intersectionP is not HitModel.Hit hm) return bgColor;
 
-		var color = hm.Material.Color ?? new Col3(0, 0, 0);
+		var materialColor = hm.Material.Color ?? new Col3(0, 0, 0);
 
-		// Ambient light
-		var ambientLight = lights
-			.FirstOrDefault(l => l is Light.Ambient)!; // There is at least one ambient light in the scene
+		var ambientLight = lights.FirstOrDefault(l => l is Light.Ambient)!;
 		var ambientComponent = ambientLight.C * hm.Material.Ka;
 
-		var parallelLights = lights
-			.Where(l => l is Light.Parallel)
-			.Cast<Light.Parallel>()
-			.ToList();
+		var phongColor = new Col3();
 
-		// Aggregated diffuse + specular light
-		var phonkComponent = parallelLights.Aggregate(new Col3(0, 0, 0),
-			(cur, l) =>
+		foreach (var light in lights.Where(l => l is not Light.Ambient))
+		{
+			Vec3 lightDir;
+
+			switch (light)
 			{
-				// If light is on the other side of the surface, then do nothing
-				if (hm.HitNormalUnit.Dot(-l.Direction) < 0) return cur;
+				case Light.Parallel parallelLight:
+					lightDir = -parallelLight.Direction;
+					break;
+				case Light.Point pointLight:
+					lightDir = (pointLight.Position - hm.P).ToUnit();
+					break;
+				default:
+					continue;
+			}
 
-				var shadowRay = new Ray(hm.P, -l.Direction);
-				// 0.001 to prevent shadow acne
-				var shadowIntersection = shadowRay.IsIntersectedBy(surfaces, 0.001, double.MaxValue);
+			// If light is on the other side of the surface, then do nothing
+			if (hm.HitNormalUnit.Dot(lightDir) < 0) continue;
 
-				// If light is in shadow, then do not add anything
-				if (shadowIntersection is HitModel.Hit) return cur;
+			var shadowRay = new Ray(hm.P, lightDir);
+			var maxDist = light is Light.Point pl ? (pl.Position - hm.P).Length() : double.MaxValue;
 
-				// Calcualte specular component from light source
-				var lightVec = l.Direction.ToUnit();
-				var eyeVec = -p.Direction.ToUnit();
-				var reflectionVec = (-lightVec).Reflect(hm.HitNormalUnit).ToUnit();
+			// 0.001 to prevent shadow acne
+			var shadowIntersection = shadowRay.IsIntersectedBy(surfaces, 0.001, maxDist);
 
-				var specularIntensity = System.Math.Pow(System.Math.Max(eyeVec.Dot(reflectionVec), 0.0),
-					hm.Material.Exp);
-				var specularColor = l.C * hm.Material.Ks * specularIntensity;
+			if (shadowIntersection is HitModel.Hit) continue;
 
-				// Calculate diffuse component from light source
-				var diffuseIntensity = System.Math.Max(hm.HitNormalUnit.Dot(-lightVec), 0.0);
-				var diffuseColor = l.C * hm.Material.Kd * diffuseIntensity;
+			// Calculate specular component from light source
+			var eyeVec = -p.Direction.ToUnit();
+			var reflectionVec = lightDir.Reflect(hm.HitNormalUnit).ToUnit();
+			var specularIntensity = System.Math.Pow(System.Math.Max(eyeVec.Dot(reflectionVec), 0.0),
+				hm.Material.Exp);
+			var specularColor = light.C * hm.Material.Ks * specularIntensity;
 
-				return cur + specularColor + diffuseColor;
-			});
+			// Calculate diffuse component from light source
+			var diffuseIntensity = System.Math.Max(hm.HitNormalUnit.Dot(lightDir), 0.0);
+			var diffuseColor = light.C * hm.Material.Kd * diffuseIntensity;
 
-		var pixelColor = color + ambientComponent + phonkComponent;
+			phongColor = phongColor + specularColor + diffuseColor;
+		}
 
-		return pixelColor;
+		var finalColor = (ambientComponent + phongColor) * materialColor;
+		return finalColor;
 	}
 }

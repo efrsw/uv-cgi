@@ -194,7 +194,6 @@ public class SceneParser
 					LightModel.Point pointLight = new(new Col3(r, g, b),
 						new Point3(positionData.x, positionData.y, positionData.z));
 					lights.Add(pointLight);
-					lights.Add(pointLight);
 					break;
 			}
 		}

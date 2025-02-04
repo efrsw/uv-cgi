@@ -29,14 +29,14 @@ public static class MappingExtensions
 		}
 	}
 
-	public static Polygon FromModel(this FaceModel model) => new(model.A, model.B, model.C, model.Normal);
+	private static Polygon FromModel(this FaceModel model) => new(model.A, model.B, model.C, model.Normal);
 
 	public static Light FromModel(this LightModel model)
 		=> model switch
 		{
 			LightModel.Ambient => new Light.Ambient(model.Color),
 			LightModel.Parallel ml => new Light.Parallel(ml.Color, ml.Direction),
-			LightModel.Point => new Light.Point(model.Color),
+			LightModel.Point pl => new Light.Point(model.Color, pl.Position),
 			_ => throw new ArgumentOutOfRangeException(nameof(model))
 		};
 
