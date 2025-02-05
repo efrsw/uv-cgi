@@ -2,7 +2,7 @@ using RayTracer.Lib.Math;
 
 namespace RayTracer.Lib.Models;
 
-public class Ray
+public struct Ray
 {
 	public Ray(Point3 start, Vec3 direction)
 	{

@@ -4,5 +4,5 @@ namespace RayTracer.Lib.Abstractions;
 
 public interface ISurface
 {
-	public HitModel IsHit(Ray r, double tMin, double tMax) => new HitModel.Empty();
+	public Hit? IsHit(Ray r, double tMin, double tMax);
 }

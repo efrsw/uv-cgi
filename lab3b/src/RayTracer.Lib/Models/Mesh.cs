@@ -16,29 +16,28 @@ public class Mesh : ISurface
 		_transformations = transformations;
 	}
 
-	public HitModel IsHit(Ray r, double tMin, double tMax)
+	public Hit? IsHit(Ray r, double tMin, double tMax)
 	{
 		var intersection = _geometry
 			.Select(p => GetIntersection(r, p, tMin, tMax))
-			.Where(p => p is HitModel.Hit)
-			.Cast<HitModel.Hit>()
-			.OrderBy(p => p.T)
+			.Where(p => p is not null)
+			.OrderBy(p => p.Value.T)
 			.FirstOrDefault();
 
-		return intersection is null ? new HitModel.Empty() : intersection;
+		return intersection;
 	}
 
-	private HitModel GetIntersection(Ray ray, Polygon polygon, double tMin, double tMax)
+	private Hit? GetIntersection(Ray ray, Polygon polygon, double tMin, double tMax)
 	{
-		var denominator = polygon.Normal.Dot(ray.Direction);
+		var d = polygon.Normal.Dot(ray.Direction);
 
 		// If ray is parallel -> no hit
-		if (System.Math.Abs(denominator) < 1e-8) return new HitModel.Empty();
+		if (System.Math.Abs(d) < 1e-8) return null;
 
-		var t = (polygon.A - ray.Start).Dot(polygon.Normal) / denominator;
+		var t = (polygon.A - ray.Start).Dot(polygon.Normal) / d;
 
 		// Check if intersection is inside bounds
-		if (t < tMin || t > tMax) return new HitModel.Empty();
+		if (t < tMin || t > tMax) return null;
 
 		// Calculate intersection point
 		var p = ray.At(t);
@@ -60,8 +59,8 @@ public class Mesh : ISurface
 		var u = 1.0 - v - w;
 
 		if (v >= 0 && w >= 0 && u >= 0)
-			return new HitModel.Hit(polygon.Normal.ToUnit(), p, t, _material);
+			return new Hit(polygon.Normal.ToUnit(), p, t, _material);
 
-		return new HitModel.Empty();
+		return null;
 	}
 }

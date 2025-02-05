@@ -18,7 +18,7 @@ public class Sphere : ISurface
 		_transformations = transformations;
 	}
 
-	public HitModel IsHit(Ray r, double tMin, double tMax)
+	public Hit? IsHit(Ray r, double tMin, double tMax)
 	{
 		var oc = _center - r.Start;
 		var a = r.Direction.Dot(r.Direction);
@@ -26,18 +26,18 @@ public class Sphere : ISurface
 		var c = oc.Dot(oc) - _radius * _radius;
 		var d = b * b - 4 * a * c;
 
-		if (d < 0) return new HitModel.Empty();
+		if (d < 0) return null;
 
 		var tRoot = (-b - System.Math.Sqrt(d)) / (2.0 * a);
 		if(tRoot <= tMin || tRoot >= tMax) 
 		{
 			tRoot = (-b + System.Math.Sqrt(d)) / (2.0 * a);
-			if(tRoot <= tMin || tRoot >= tMax) return new HitModel.Empty();
+			if(tRoot <= tMin || tRoot >= tMax) return null;
 		}
 
 		var intPoint = r.At(tRoot);
 		var normal = (intPoint - _center) / _radius;
 
-		return new HitModel.Hit(normal, r.At(tRoot), tRoot, _material);
+		return new Hit(normal, r.At(tRoot), tRoot, _material);
 	}
 }
