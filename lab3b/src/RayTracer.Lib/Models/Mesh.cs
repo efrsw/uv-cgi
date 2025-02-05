@@ -21,7 +21,7 @@ public class Mesh : ISurface
 		var intersection = _geometry
 			.Select(p => GetIntersection(r, p, tMin, tMax))
 			.Where(p => p is not null)
-			.OrderBy(p => p.Value.T)
+			.OrderBy(p => p?.T)
 			.FirstOrDefault();
 
 		return intersection;
